@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personal Blog</title>
+
+    <style>
+
+        title {
+            text-align: center;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #fcc6eb;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+        }
+
+        nav {
+            text-align: center;
+            word-spacing: 30px;
+            padding: 10px;
+            background-color: #1b9b73;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #2f5183;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 20px;
+        }
+
+        .content-column {
+            float: left;
+            width: 30%;
+            padding: 20px;
+            background-color: #ebf180;
+            border: 3px solid #d3ed54;
+            font-family: 'Courier New', Courier, monospace;
+            color:#2f5183
+        }
+
+        .content-column ul {
+            padding-left: 20px; 
+            margin-top: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #2f5183;
+            font-size: 14px;
+        }
+
+        .content-column li {
+            margin-bottom: 6px;
+        }
+
+        .content-column a {
+            color: #2f5183 
+        }
+
+
+
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            background-color: #1b9b73;
+            font-family: 'Courier New', Courier, monospace;
+            color:#3965a8
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1 style="font-family: 'Courier New', Courier, monospace; font-size: 40px; color: #4d75b1;">Welcome!</h1>
+</header>
+
+<nav>
+    <a href="domain.tld/home">Home</a>
+    <a href="domain.tld/blog">Blog</a>
+    <a href="domain.tld/about">About</a>
+</nav>
+
+<main>
+
+    <div id="contentBox" style="margin:0px auto; width:70%; display:flex; justify-content:center;">
+
+        <div id="column1" class="content-column">
+            <h1>Newest Post</h1>
+            <p>This is the newest post's content.          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+
+        <div id="column2" class="content-column">
+            <h1>First Post</h1>
+            <p>This is the first post's content.           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+
+        <div id="column3" class="content-column">
+            <h1>About Me</h1>
+            <p>About the author</p>
+            <img src="IMG_2676.JPEG" width="130" height="150">
+            <img src="799239 Catiller, Emma.jpg" width="130" height="150">
+        </div>
+        
+        <div id="column4" class="content-column">
+            <h1>Classes</h1>
+            <ul>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/OOKcUx1AWZzuiHXaNQu3/tab-aoYks" >Discrete Structures</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/wK8pSD9ArlckEgLKZJsv/tab-aoYks" >Data Structures and Analysis</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/64Cj6N31CeQxBfzrIVrs/tab-aoYks" >Magnolia Singers</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/t9fxHGGQCnHWoYvxPje8/tab-aoYks" >Voice Practicum</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/9q23Ge9YyxEs4pixYvSr/tab-aoYks" >Mathematical Statistics</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/k9JcRcnImMZOzsnUHbxU/tab-aoYks" >The Christian Faith</a></li>
+                <li><a href = "https://undergraduate.catalog.calbaptist.edu/courses/3xfkKmN6GDuwAkgKn3ZF/tab-aoYks" >Web Application Development</a></li>
+            </ul>
+
+               <table style="width:100%; border-collapse: collapse; font-family: 'Courier New', Courier, monospace; color:#2f5183; font-size: 11px;">
+        <tr>
+            <th style="border: 2px solid #748428; padding: 8px; background-color:#f7ffb0;">Time</th>
+            <th style="border: 2px solid #748428; padding: 8px; background-color:#f7ffb0;">Class</th>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">M/W/F 10:45-11:45</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">The Christian Faith</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">M/W 3:15-5:15</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Magnolia Singers</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">M 1:00-2:00</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Voice Practicum</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">T/TR 10:30-12:00</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Discrete Structures</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">T/TR 12:15-1:45</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Mathematical Statistics</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">T/TR 2:00-3:30</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Data Structures and Analysis</td>
+        </tr>
+
+        <tr>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">T/TR 3:45-5:15</td>
+            <td style="border: 2px solid #d3ed54; padding: 8px;">Web Application Development</td>
+        </tr>
+
+    </table>
+
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+    <a href="https://twitter.com/author">Twitter</a>
+    <a href="https://facebook.com/author">Facebook</a>
+    <a href="https://instagram.com/author">Instagram</a>
+</footer>
+
+</body>
+</html>
