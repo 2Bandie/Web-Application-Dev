@@ -1,0 +1,93 @@
+h1 {
+ text-align: center;
+ font-family: georgia, serif;
+ font-weight: bold; 
+} 
+
+#game-board {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.letter-box {
+  border: 2px solid rgb(58, 110, 143);
+  border-radius: 10px;
+  margin: 2px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  height: 3rem;
+  width: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.filled-box {
+  border: 2px solid rgb(16, 58, 84);
+}
+
+.letter-row {
+  display: flex;
+}
+
+#keyboard-cont {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#keyboard-cont div {
+  display: flex;
+}
+
+.second-row {
+  margin: 0.5rem 0;
+}
+
+.keyboard-button {
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.5rem;
+  margin: 0 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+#play-again-button {
+    padding: 12px 20px;
+    font-size: 18px;
+    font-family: georgia, serif;
+    border-radius: 10px;
+    border-color: #40bef4;
+    background-color: #2a99c9;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+#play-again-button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(59, 122, 195, 0.6);
+}
+
+
+#play-again-button:active {
+    transform: scale(0.95);
+}
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.fade-in {
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
