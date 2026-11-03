@@ -1,0 +1,293 @@
+.game {
+  position: relative;
+  overflow: hidden;
+  width: 600px;
+  height: 225px;
+  border: 1px solid black;
+  background-color: rgb(109, 208, 237);
+  margin: auto;
+}
+
+.meadow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--meadow-img);
+  background-repeat: repeat-x;
+  background-size: 576px 324px;
+  background-position: 0 100%;
+  image-rendering: pixelated;
+  animation: meadowScroll 2s linear infinite;
+}
+
+@keyframes meadowScroll {
+  from {
+    background-position: 0 100%;
+  }
+
+  to {
+    background-position: -576px 100%;
+  }
+}
+
+.cloud{
+  position: absolute;
+  left: 0;
+  z-index: 0;
+  height: auto;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation-name: cloudMove;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+  transform: translateX(600px);
+}
+
+@keyframes cloudMove {
+  from {
+    transform: translateX(600px);
+  }
+  to {
+    transform: translateX(-150px);
+  }
+}
+
+#dino {
+  width: 32px;
+  height: 32px;
+  background-image: var(--run-img);
+  background-size: 160px 32px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  position: relative;
+  top: 150px;
+  left: 0;
+  animation: run 0.5s steps(5) infinite;
+}
+
+#dino.jump {
+  background-image: var(--jump-img);
+  background-size: 512px 32px;
+  animation:
+    bunnyJumpFrames 0.8s steps(16) 1,
+    bunnyJumpMotion 0.8s linear 1;
+}
+
+
+@keyframes run {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: -160px 0;
+  }
+}
+
+@keyframes bunnyJumpFrames {
+  from { background-position: 0 0; }
+  to   { background-position: -512px 0; } /* adjust for sheet width */
+}
+
+@keyframes bunnyJumpMotion {
+  0%   { top: 150px; animation-timing-function: ease-out; }
+  50%  { top: 60px;  animation-timing-function: ease-in; }  /* peak */
+  100% { top: 150px; }
+}
+
+
+#cactus {
+  width: 32px;
+  height: 22px;
+  position: relative;
+  top: 128px;
+  left: 580px;
+
+  background-size: 32px 22px;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+
+  animation: block 3s infinite linear;
+  z-index: 2;
+}
+
+@keyframes block {
+  0% {
+    left: 580px;
+  }
+
+  100% {
+    left: -40px;
+  }
+}
+
+
+/* Flower patch version of the obstacle */
+#cactus.flower {
+  width: 34px;
+  height: 31px;
+  top: 119px;               /* keeps the bottom on the same ground line as the log */
+  background-size: 34px 31px;
+}
+
+/* ---------- Duck-through-flowers animation ---------- */
+#dino.duck-lie {
+  background-image: var(--lie-img);
+  background-size: 64px 32px;              /* 2 frames x 32px */
+  animation: bunnyLie 0.25s step-end forwards;
+}
+
+#dino.duck-hide {
+  visibility: hidden;
+  animation: none;
+}
+
+#dino.duck-sit {
+  background-image: var(--sit-img);
+  background-size: 96px 32px;              /* 3 frames x 32px */
+  animation: bunnySitReverse 0.3s step-end forwards;
+}
+
+@keyframes bunnyLie {
+  0%   { background-position: 0 0; }
+  50%  { background-position: -32px 0; }
+  100% { background-position: -32px 0; }
+}
+
+/* right-most frame first, then to the left */
+@keyframes bunnySitReverse {
+  0%       { background-position: -64px 0; }
+  33.333%  { background-position: -32px 0; }
+  66.666%  { background-position: 0 0; }
+  100%     { background-position: 0 0; }
+}
+
+
+/* Freezes everything on crash / game over */
+.game.frozen * {
+  animation-play-state: paused !important;
+}
+
+/* Log stays hidden until the game starts */
+.game.ready #cactus {
+  visibility: hidden;
+}
+
+/* Start + Game Over screens */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
+  text-align: center;
+}
+
+.overlay h2 {
+  margin: 0;
+  font-size: 26px;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.overlay p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.overlay button {
+  padding: 6px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background: #4caf50;
+  border: 3px solid white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.overlay button:hover {
+  background: #66bb6a;
+}
+
+/* small controls hint on the start screen */
+.overlay .controls {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Carrot power-up ---------- */
+/* zero-height lane that sits right under the bunny, so the carrot can use the same ground line as the log */
+.carrot-lane {
+  position: relative;
+  height: 0;
+  z-index: 1;
+}
+
+.carrot {
+  position: absolute;
+  top: 118px;               /* 32px tall carrot, bottom on the same ground line as the log */
+  left: 580px;
+  width: 32px;
+  height: 32px;
+  animation: carrotMove 6.5s linear forwards;   /* same speed as the obstacles */
+}
+
+.carrot.picked {
+  animation: none;          /* stops scrolling; JS pins its left position */
+}
+
+.carrot-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 300% 100%;     /* 3 frames side by side, works at any image size */
+  background-repeat: no-repeat;
+  background-position: 0% 0;      /* frame 1 (left-most) */
+}
+
+/* frames 2 then 3 */
+.carrot-sprite.pull {
+  animation: carrotPull 0.4s step-end forwards;
+}
+
+/* last frame floats up and fades out */
+.carrot-sprite.rise {
+  background-position: 100% 0;
+  animation: carrotRise 0.25s ease-out forwards;
+}
+
+@keyframes carrotMove {
+  from { left: 580px; }
+  to   { left: -40px; }
+}
+
+@keyframes carrotPull {
+  0%   { background-position: 50% 0; }
+  50%  { background-position: 100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+@keyframes carrotRise {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(-40px); opacity: 0; }
+}
+
+/* ---------- Bunny carrot skill ---------- */
+#dino.skill {
+  background-image: var(--skill-img);
+  background-size: calc(var(--skill-frames) * 32px) 32px;
+  animation: bunnySkill var(--skill-ms) steps(var(--skill-frames)) 1;
+}
+
+@keyframes bunnySkill {
+  from { background-position: 0 0; }
+  to   { background-position: calc(var(--skill-frames) * -32px) 0; }
+}
