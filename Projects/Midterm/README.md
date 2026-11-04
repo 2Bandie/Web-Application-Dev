@@ -15,7 +15,7 @@ From `Projects/Midterm`:
 ./scripts/dev.sh
 ```
 
-Open the Vite server on port **5173** in your local development browser. API and WebSocket requests are proxied to Django on **8001**. Stop the development script with Ctrl+C. Setup can be rerun; migrations do not erase existing accounts or scores. Both seeded tracks are installed by migrations.
+Open the Vite server on port **5500** in your local development browser. API and WebSocket requests are proxied to Django on **8001**. Stop the development script with Ctrl+C. Setup can be rerun; migrations do not erase existing accounts or scores. Both seeded tracks are installed by migrations.
 
 Alternatively, use two terminals:
 
@@ -26,8 +26,12 @@ Alternatively, use two terminals:
 
 ```bash
 # Terminal 2, from Projects/Midterm/frontend
-npm run dev -- --port 5173 --strictPort
+npm run dev -- --port 5500 --strictPort
 ```
+
+### Using VS Code
+
+Open this folder in VS Code, stop the Live Server extension if it is running, and run `./scripts/dev.sh` in the integrated terminal. Open `http://localhost:5500` in your browser. Live Server cannot compile the TypeScript/React source or proxy the Django API and WebSockets; Vite handles those features on port 5500 instead. Do not use “Go Live” for this application.
 
 ### Play with a friend
 
@@ -147,7 +151,7 @@ Some managed command sandboxes prevent asyncio socket setup or local servers. Ru
 
 The default is deliberately **one Daphne process**, an **in-memory channel layer**, and **SQLite**. This supports a classroom/local multiplayer demo. Do not run multiple workers: room broadcasts would be isolated. For deployment, use PostgreSQL for row locking, a Redis-backed Channels layer for shared broadcasts, TLS/WSS, a proper reverse proxy routing `/api` and `/ws`, a random `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0`, explicit `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`, and a static host for `frontend/dist`. Redis and production hosting are not configured here. No public deployment is claimed.
 
-For two computers on a trusted LAN, bind Vite to the LAN interface (`npm run dev -- --host 0.0.0.0 --port 5173 --strictPort`) and add that exact frontend origin to the exported `CORS_ALLOWED_ORIGINS` before starting Django. Django can remain bound to loopback because Vite proxies it. Do not expose the development server to the public Internet.
+For two computers on a trusted LAN, bind Vite to the LAN interface (`npm run dev -- --host 0.0.0.0 --port 5500 --strictPort`) and add that exact frontend origin to the exported `CORS_ALLOWED_ORIGINS` before starting Django. Django can remain bound to loopback because Vite proxies it. Do not expose the development server to the public Internet.
 
 ## Git workflow
 

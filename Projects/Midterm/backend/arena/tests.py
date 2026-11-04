@@ -212,7 +212,7 @@ class SocketTests(TransactionTestCase):
         return WebsocketCommunicator(
             application,
             f"/ws/rooms/{self.room.code}/",
-            headers=[(b"origin", b"http://localhost:5173")],
+            headers=[(b"origin", b"http://localhost:5500")],
         )
 
     def test_socket_auth_and_membership(self):

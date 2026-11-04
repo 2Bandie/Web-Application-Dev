@@ -17,6 +17,6 @@ trap 'exit 130' INT TERM
 (cd backend && exec .venv/bin/daphne -b 127.0.0.1 -p 8001 config.asgi:application) &
 backend_pid=$!
 # Launch Vite directly so its PID can be stopped reliably.
-(cd frontend && exec node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5173 --strictPort) &
+(cd frontend && exec node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5500 --strictPort) &
 frontend_pid=$!
 wait -n "$backend_pid" "$frontend_pid"
