@@ -9,7 +9,7 @@ from rest_framework.exceptions import APIException
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Room, Participation
 from .serializers import RoomSerializer
-from .services import record_hit, finish_if_due
+from .services import record_hit, finish_if_due, InputRejected
 
 
 @database_sync_to_async
@@ -37,6 +37,16 @@ def snapshot(code, user):
         "server_time": timezone.now().isoformat(),
         "hit_notes": list(p.hits.values_list("note", flat=True)),
     }
+
+
+def readable_error(detail):
+    if isinstance(detail, dict):
+        return " · ".join(
+            f"{key}: {readable_error(value)}" for key, value in detail.items()
+        )
+    if isinstance(detail, (list, tuple)):
+        return " ".join(readable_error(value) for value in detail)
+    return str(detail)
 
 
 class SessionConsumer(AsyncWebsocketConsumer):
@@ -100,13 +110,31 @@ class SessionConsumer(AsyncWebsocketConsumer):
             )
             await self.send_json({"type": "judgement", **result})
             await self.channel_layer.group_send(self.group, {"type": "room.update"})
+        except InputRejected as exc:
+            await self.send_json(
+                {
+                    "type": "input_rejected",
+                    "note": data.get("note") if type(data.get("note")) is int else None,
+                    "reason": exc.get_codes()[0],
+                    "message": readable_error(exc.detail),
+                }
+            )
         except (
             ValueError,
             APIException,
             Room.DoesNotExist,
             Participation.DoesNotExist,
         ) as exc:
-            await self.send_json({"type": "error", "message": str(exc)})
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": (
+                        readable_error(exc.detail)
+                        if isinstance(exc, APIException)
+                        else str(exc)
+                    ),
+                }
+            )
             if not self.user:
                 await self.close(code=4401)
         except DatabaseError:

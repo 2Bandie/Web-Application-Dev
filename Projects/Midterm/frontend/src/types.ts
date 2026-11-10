@@ -31,8 +31,9 @@ export const RoomSchema = z.object({
   host_id: z.number(),
   mode: z.enum(["solo", "multiplayer"]),
   song: SongSchema,
-  status: z.enum(["lobby", "running", "finished"]),
+  status: z.enum(["lobby", "running", "finished", "paused", "abandoned"]),
   starts_at: z.string().nullable(),
+  paused_at: z.string().nullable(),
   participants: z.array(PlayerSchema),
 });
 export type Room = z.infer<typeof RoomSchema>;
@@ -71,6 +72,18 @@ export const PacketSchema = z.discriminatedUnion("type", [
     grade: z.enum(["perfect", "good"]),
     delta_ms: z.number(),
     note: z.number(),
+  }),
+  z.object({
+    type: z.literal("input_rejected"),
+    note: z.number().int().nullable(),
+    reason: z.enum([
+      "timing",
+      "wrong_lane",
+      "duplicate",
+      "out_of_order",
+      "inactive",
+    ]),
+    message: z.string(),
   }),
   z.object({ type: z.literal("error"), message: z.string() }),
   z.object({ type: z.literal("pong"), server_time: z.string() }),

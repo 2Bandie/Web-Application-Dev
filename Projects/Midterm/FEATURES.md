@@ -49,3 +49,9 @@ See `README.md` for exact startup commands, API/socket formats, scoring math, an
 - Accuracy-first standings and song-specific leaderboard records; longer charts have no raw-points advantage.
 - Synthesized kick, snare, hi-hats, bass, and chords scheduled independently of canvas rendering, with mute cleanup.
 - Additive migrations, Windows update instructions, and tests for solo privacy/rollback, catalog density, live accuracy, ranking fairness, and browser playback.
+
+## Solo playback and feedback update
+
+Solo mode now includes Pause, Resume, Start over, and Quit level. The server freezes elapsed time and shifts the start timestamp on resume; audio/notes follow that authoritative state. Restart creates a clean attempt on the same song, and abandoned attempts are excluded from completed records. Reloads preserve paused state. Multiplayer controls remain guarded.
+
+Mistimed input now produces structured MISS feedback instead of raw Django validation output. Dedicated backend and browser tests cover these transitions, incomplete-result exclusion, and delayed input delivery.

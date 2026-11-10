@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
-from django.utils import timezone
+from .services import elapsed
 from rest_framework import serializers
 from .models import Profile, Song, Room, Participation
 
@@ -51,8 +51,8 @@ class PlayerSerializer(serializers.ModelSerializer):
             return obj.accuracy
         if not room.starts_at:
             return 0.0
-        elapsed = (timezone.now() - room.starts_at).total_seconds() * 1000
-        expired = sum(note["time"] < elapsed - 180 for note in room.song.chart)
+        position = elapsed(room)
+        expired = sum(note["time"] < position - 180 for note in room.song.chart)
         last_hit = max((hit.note + 1 for hit in obj.hits.all()), default=0)
         judged = max(expired, last_hit)
         return obj.score / (judged * 1000) * 100 if judged else 0.0
@@ -87,6 +87,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "mode",
             "status",
             "starts_at",
+            "paused_at",
             "participants",
         ]
 

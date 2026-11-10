@@ -12,16 +12,19 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
   const roomCallback = useRef(onRoom);
   roomCallback.current = onRoom;
   useEffect(() => {
-    if (!code) return;
+    setError("");
+    setFeedback("");
+    hitNotes.current = new Set();
+    pending.current = new Set();
+    if (!code) {
+      setConnection("offline");
+      return;
+    }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let attempts = 0;
     let pingTime = 0;
     let calibrated = false;
-    hitNotes.current = new Set();
-    pending.current = new Set();
-    setError("");
-    setFeedback("");
     function connect() {
       if (cancelled) return;
       setConnection("connecting");
@@ -72,6 +75,15 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
           setFeedback(
             `${p.grade.toUpperCase()} · ${p.delta_ms > 0 ? "+" : ""}${p.delta_ms} ms`,
           );
+        } else if (p.type === "input_rejected") {
+          if (p.note !== null) pending.current.delete(p.note);
+          if (
+            p.reason === "timing" ||
+            p.reason === "wrong_lane" ||
+            p.reason === "out_of_order"
+          ) {
+            setFeedback(`MISS · ${p.message}`);
+          }
         } else {
           setError(p.message);
           pending.current.clear();
@@ -122,5 +134,20 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
     pending.current.add(note);
     socket.current.send(JSON.stringify({ type: "hit", note, lane }));
   }, []);
-  return { connection, feedback, error, offset, hitNotes, hit };
+  const miss = useCallback(
+    () => setFeedback("MISS · No note at the hit line on this lane."),
+    [],
+  );
+  const dismissError = useCallback(() => setError(""), []);
+  return {
+    connection,
+    feedback,
+    error,
+    offset,
+    hitNotes,
+    pendingNotes: pending,
+    hit,
+    miss,
+    dismissError,
+  };
 }

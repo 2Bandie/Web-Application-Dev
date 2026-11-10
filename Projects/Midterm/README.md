@@ -51,6 +51,19 @@ Open this folder in VS Code, stop the Live Server extension if it is running, an
 
 Both new charts use rounded musical-grid timestamps instead of accumulating millisecond rounding error. Overdrive changes lane patterns between phrases and ends with a sustained stream. The new migrations preserve existing accounts, charts, and results.
 
+### Solo playback controls
+
+While playing solo, use **Pause**, **Resume**, **Start over**, or **Quit level** above the note lanes.
+
+- **Pause** freezes the server clock, notes, audio, accuracy, and initial countdown if it is still running. A paused session survives a reload; reopen it from Resume a session.
+- **Resume** continues immediately from the saved song position. Time spent paused does not turn notes into misses.
+- **Start over** restarts the same selected level with a new countdown, empty hit history, and zero score/combo. A fresh session code isolates late packets from the previous attempt.
+- **Quit level** stops playback and returns to song selection. Incomplete attempts are abandoned and do not appear in completed history or leaderboards. Completed results remain saved when replaying.
+
+These controls are solo-only; multiplayer cannot pause another player's song. Apply the latest migration after updating your files.
+
+A mistimed key is normal gameplay, not an application error. The server sends a typed `input_rejected` packet with a readable reason, which the client displays as **MISS** feedback near the game. Duplicate or inactive inputs are safely ignored. Validation/authentication/network failures still appear as readable errors; internal Django `ErrorDetail` representations are never displayed.
+
 ### Update an existing Windows installation
 
 Stop the frontend and backend terminals with Ctrl+C, download the updated branch (or `git pull origin multiplayer-rhythm-arena` if using Git), then run the following **inside `Projects\Midterm\backend`** in PowerShell:
@@ -129,10 +142,14 @@ All routes except registration and token issuance require JWT authentication.
 | POST | `/api/rooms/{code}/join/` | Join by code (max four players) |
 | POST | `/api/rooms/{code}/ready/` | `{ready: boolean}` in lobby |
 | POST | `/api/rooms/{code}/start/` | Host-only synchronized start |
+| POST | `/api/rooms/{code}/pause/` | Freeze a solo session |
+| POST | `/api/rooms/{code}/resume/` | Resume the paused clock |
+| POST | `/api/rooms/{code}/restart/` | Fresh solo attempt on the same song |
+| POST | `/api/rooms/{code}/quit/` | Abandon an incomplete solo attempt |
 | GET | `/api/leaderboard/` | Each player's best completed accuracy per song |
 | GET | `/api/history/` | Current user's recent completed runs |
 
-Connect to `/ws/rooms/{code}/` through the same frontend origin. Send `{"type":"auth","token":"<access token>"}` within five seconds. After authentication, send `{"type":"hit","note":0,"lane":0}` or `{"type":"ping"}`. The server sends `snapshot`, `judgement`, `pong`, and `error` packets. The Zod definitions in `frontend/src/types.ts` are the client contract. Allowed origins and membership are checked independently. Input frames are bounded to 4 KB and scored inputs are limited to 40 per second per socket; REST uses DRF throttling.
+Connect to `/ws/rooms/{code}/` through the same frontend origin. Send `{"type":"auth","token":"<access token>"}` within five seconds. After authentication, send `{"type":"hit","note":0,"lane":0}` or `{"type":"ping"}`. The server sends `snapshot`, `judgement`, `input_rejected`, `pong`, and `error` packets. The Zod definitions in `frontend/src/types.ts` are the client contract. Allowed origins and membership are checked independently. Input frames are bounded to 4 KB and scored inputs are limited to 40 per second per socket; REST uses DRF throttling.
 
 ## Validation
 
@@ -148,7 +165,7 @@ npm run typecheck
 npm run format:check
 ```
 
-The backend suite covers password validation, JWT login/refresh, membership, host permissions, ready gating, room capacity, chart validation, timing/lane/type checks, duplicate prevention, combo reset, finalization, leaderboard aggregation, socket authentication, origin restrictions, and reconnect state.
+The backend suite also covers pause/resume clock math, paused accuracy/completion, countdown preservation, restart isolation/rollback, quit exclusion, solo-only permissions, and readable input rejection. It covers password validation, JWT login/refresh, membership, host permissions, ready gating, room capacity, chart validation, timing/lane/type checks, duplicate prevention, combo reset, finalization, leaderboard aggregation, socket authentication, origin restrictions, and reconnect state.
 
 For the two-player browser integration test, start both servers, then:
 
@@ -160,7 +177,7 @@ npm run test:e2e
 CHROMIUM_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-The multiplayer browser test uses two isolated accounts, starts a real session, plays a note in both browsers, asserts remote score broadcasts, reloads a player, waits for completion, and checks persisted history and leaderboard entries. A second browser test selects Overdrive, starts solo without a lobby, plays a note, checks percussion source creation and mute cleanup, and checks the page has no speed-competition wording. These tests create uniquely named test accounts and results in the development database. Do not point it at production data.
+The multiplayer browser test uses two isolated accounts, starts a real session, plays a note in both browsers, asserts remote score broadcasts, reloads a player, waits for completion, and checks persisted history and leaderboard entries. A second browser test selects Overdrive, starts solo without a lobby, plays a note, checks percussion source creation and mute cleanup, and checks the page has no speed-competition wording. Additional browser tests cover pause/resume, frozen canvas and accuracy, paused reload recovery, restart/quit, and delayed network inputs producing MISS feedback without an error banner. These tests create uniquely named test accounts and results in the development database. Do not point it at production data.
 
 Optional Python formatting:
 

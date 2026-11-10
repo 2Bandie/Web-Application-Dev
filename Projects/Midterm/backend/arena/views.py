@@ -16,7 +16,16 @@ from .serializers import (
     CreateRoomSerializer,
     ReadySerializer,
 )
-from .services import join_room, start_room, set_ready, finish_if_due
+from .services import (
+    join_room,
+    start_room,
+    set_ready,
+    finish_if_due,
+    pause_solo,
+    resume_solo,
+    restart_solo,
+    quit_solo,
+)
 
 
 def broadcast(code):
@@ -84,6 +93,28 @@ class RoomViewSet(viewsets.GenericViewSet):
         start_room(room.code, request.user)
         room.refresh_from_db()
         return Response(self.get_serializer(room).data, status=201)
+
+    def solo_control(self, request, code, operation):
+        self.get_object()
+        room = operation(code, request.user)
+        broadcast(code)
+        return Response(self.get_serializer(room).data)
+
+    @action(detail=True, methods=["post"])
+    def pause(self, request, code=None):
+        return self.solo_control(request, code, pause_solo)
+
+    @action(detail=True, methods=["post"])
+    def resume(self, request, code=None):
+        return self.solo_control(request, code, resume_solo)
+
+    @action(detail=True, methods=["post"])
+    def restart(self, request, code=None):
+        return self.solo_control(request, code, restart_solo)
+
+    @action(detail=True, methods=["post"])
+    def quit(self, request, code=None):
+        return self.solo_control(request, code, quit_solo)
 
     @action(detail=True, methods=["post"])
     def join(self, request, code=None):

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 from unittest.mock import patch
 from asgiref.sync import async_to_sync
@@ -11,7 +12,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
 from config.asgi import application
 from .models import Room, Participation, Hit, Song, Profile, validate_chart
-from .services import record_hit, finish_if_due
+from .services import record_hit, finish_if_due, elapsed
 
 
 class ApiTests(TestCase):
@@ -281,6 +282,131 @@ class ApiTests(TestCase):
             song.full_clean()
 
 
+class SoloControlTests(TestCase):
+    def setUp(self):
+        self.host = User.objects.create_user("solo-controls")
+        self.other = User.objects.create_user("not-the-player")
+        self.client = APIClient()
+        self.client.force_authenticate(self.host)
+        self.room = Room.objects.create(
+            host=self.host,
+            song=Song.objects.first(),
+            mode="solo",
+            status="running",
+            starts_at=timezone.now() - timedelta(milliseconds=1500),
+        )
+        Participation.objects.create(room=self.room, user=self.host, ready=True)
+        self.url = f"/api/rooms/{self.room.code}/"
+
+    def test_pause_freezes_position_accuracy_and_completion_then_resume_shifts_origin(
+        self,
+    ):
+        now = timezone.now()
+        with patch("arena.services.timezone.now", return_value=now):
+            record_hit(self.room.code, self.host, 0, 0)
+            self.assertEqual(self.client.post(self.url + "pause/").status_code, 200)
+            self.room.refresh_from_db()
+            position = elapsed(self.room)
+            stamp = self.room.paused_at
+        later = now + timedelta(minutes=10)
+        with patch("arena.services.timezone.now", return_value=later):
+            self.assertEqual(elapsed(self.room), position)
+            self.assertEqual(finish_if_due(self.room.code).status, "paused")
+            response = self.client.get(self.url)
+            self.assertEqual(response.data["participants"][0]["accuracy"], 100)
+            # Duplicate pause must not move the frozen timestamp.
+            self.client.post(self.url + "pause/")
+            self.room.refresh_from_db()
+            self.assertEqual(self.room.paused_at, stamp)
+            with self.assertRaises(ValidationError):
+                record_hit(self.room.code, self.host, 1, 1)
+            self.assertEqual(self.client.post(self.url + "resume/").status_code, 200)
+            self.room.refresh_from_db()
+            self.assertEqual(self.room.status, "running")
+            self.assertIsNone(self.room.paused_at)
+            self.assertAlmostEqual(elapsed(self.room), position)
+            with patch("arena.services.elapsed", return_value=2100):
+                record_hit(self.room.code, self.host, 1, 1)
+        self.assertEqual(self.room.participants.get().score, 2000)
+
+    def test_pausing_initial_countdown_preserves_remaining_time(self):
+        now = timezone.now()
+        self.room.starts_at = now + timedelta(seconds=2)
+        self.room.save()
+        with patch("arena.services.timezone.now", return_value=now):
+            self.client.post(self.url + "pause/")
+        with patch(
+            "arena.services.timezone.now", return_value=now + timedelta(seconds=20)
+        ):
+            self.client.post(self.url + "resume/")
+            self.room.refresh_from_db()
+            self.assertEqual(elapsed(self.room), -2000)
+
+    def test_restart_creates_clean_attempt_on_same_song_and_old_packets_cannot_score(
+        self,
+    ):
+        with patch("arena.services.elapsed", return_value=1500):
+            record_hit(self.room.code, self.host, 0, 0)
+        self.client.post(self.url + "pause/")
+        response = self.client.post(self.url + "restart/")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.data["code"], self.room.code)
+        self.assertEqual(response.data["song"]["id"], self.room.song_id)
+        self.assertEqual(response.data["mode"], "solo")
+        self.assertEqual(response.data["status"], "running")
+        self.assertEqual(response.data["participants"][0]["score"], 0)
+        self.assertEqual(response.data["participants"][0]["max_combo"], 0)
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.status, "abandoned")
+        with self.assertRaises(ValidationError):
+            record_hit(self.room.code, self.host, 1, 1)
+        self.assertEqual(self.client.get("/api/history/").data, [])
+        self.assertEqual(self.client.get("/api/leaderboard/").data, [])
+
+    def test_quit_abandons_attempt_without_completed_result(self):
+        self.client.post(self.url + "pause/")
+        response = self.client.post(self.url + "quit/")
+        self.assertEqual(response.data["status"], "abandoned")
+        self.assertIsNone(response.data["paused_at"])
+        self.assertFalse(self.room.participants.get().finished)
+        self.assertEqual(self.client.get("/api/history/").data, [])
+        self.assertEqual(self.client.get("/api/leaderboard/").data, [])
+        self.assertEqual(self.client.post(self.url + "resume/").status_code, 400)
+        self.assertEqual(self.client.post(self.url + "restart/").status_code, 400)
+
+    def test_solo_only_controls_enforce_permissions(self):
+        self.client.force_authenticate(self.other)
+        for action in ("pause", "resume", "restart", "quit"):
+            self.assertEqual(self.client.post(self.url + action + "/").status_code, 404)
+        self.client.force_authenticate(self.host)
+        self.room.mode = "multiplayer"
+        self.room.save()
+        for action in ("pause", "resume", "restart", "quit"):
+            self.assertEqual(self.client.post(self.url + action + "/").status_code, 400)
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.status, "running")
+
+    def test_restart_completed_song_preserves_its_historical_result(self):
+        self.room.starts_at = timezone.now() - timedelta(minutes=3)
+        self.room.save()
+        finish_if_due(self.room.code)
+        response = self.client.post(self.url + "restart/")
+        self.assertEqual(response.status_code, 200)
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.status, "finished")
+        self.assertTrue(self.room.participants.get().finished)
+        self.assertEqual(len(self.client.get("/api/history/").data), 1)
+
+    def test_restart_is_atomic_if_new_start_fails(self):
+        with patch(
+            "arena.services.start_room", side_effect=ValidationError("Cannot start")
+        ):
+            self.assertEqual(self.client.post(self.url + "restart/").status_code, 400)
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.status, "running")
+        self.assertEqual(Room.objects.count(), 1)
+
+
 class SocketTests(TransactionTestCase):
     def setUp(self):
         self.host = User.objects.create_user("socket-host")
@@ -329,7 +455,9 @@ class SocketTests(TransactionTestCase):
                 self.assertEqual(packet["room"]["code"], self.room.code)
                 self.assertEqual(len(packet["room"]["participants"]), 2)
             await sockets[0].send_json_to({"type": "hit", "note": 0, "lane": 0})
-            self.assertEqual((await sockets[0].receive_json_from())["type"], "error")
+            self.assertEqual(
+                (await sockets[0].receive_json_from())["type"], "input_rejected"
+            )
             await sockets[0].disconnect()
             ws = self.socket()
             await ws.connect()
@@ -337,6 +465,34 @@ class SocketTests(TransactionTestCase):
             self.assertEqual((await ws.receive_json_from())["room"]["status"], "lobby")
             await ws.disconnect()
             await sockets[1].disconnect()
+
+        async_to_sync(check)()
+
+    def test_timing_rejection_is_readable_gameplay_feedback_and_real_validation_is_clean(
+        self,
+    ):
+        self.room.status = "running"
+        self.room.starts_at = timezone.now()
+        self.room.save()
+        token = str(AccessToken.for_user(self.host))
+
+        async def check():
+            ws = self.socket()
+            await ws.connect()
+            await ws.send_json_to({"type": "auth", "token": token})
+            await ws.receive_json_from()
+            await ws.send_json_to({"type": "hit", "note": 0, "lane": 0})
+            packet = await ws.receive_json_from()
+            self.assertEqual(packet["type"], "input_rejected")
+            self.assertEqual(packet["reason"], "timing")
+            self.assertIn("Too early", packet["message"])
+            self.assertNotIn("ErrorDetail", packet["message"])
+            await asyncio.sleep(0.03)
+            await ws.send_json_to({"type": "hit", "note": -1, "lane": 0})
+            packet = await ws.receive_json_from()
+            self.assertEqual(packet["type"], "error")
+            self.assertEqual(packet["message"], "Invalid note or lane.")
+            await ws.disconnect()
 
         async_to_sync(check)()
 

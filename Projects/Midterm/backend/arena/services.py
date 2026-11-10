@@ -7,9 +7,13 @@ from .models import Room, Participation, Hit
 WINDOW = 180
 
 
+class InputRejected(ValidationError):
+    """An ordinary unscored key press, not an application failure."""
+
+
 def elapsed(room):
     return (
-        (timezone.now() - room.starts_at).total_seconds() * 1000
+        ((room.paused_at or timezone.now()) - room.starts_at).total_seconds() * 1000
         if room.starts_at
         else -1
     )
@@ -59,7 +63,9 @@ def set_ready(code, user, ready):
 def record_hit(code, user, note, lane):
     room = Room.objects.select_for_update().select_related("song").get(code=code)
     if room.status != Room.Status.RUNNING:
-        raise ValidationError("No session in progress.")
+        raise InputRejected(
+            "Input ignored while the song is not playing.", code="inactive"
+        )
     p = Participation.objects.select_for_update().get(room=room, user=user)
     chart = room.song.chart
     if (
@@ -71,14 +77,23 @@ def record_hit(code, user, note, lane):
         raise ValidationError("Invalid note or lane.")
     target = chart[note]
     delta = round(elapsed(room) - target["time"])
-    if target["lane"] != lane or abs(delta) > WINDOW:
-        raise ValidationError("Outside the hit window or wrong lane.")
+    if target["lane"] != lane:
+        raise InputRejected("Wrong lane — no points awarded.", code="wrong_lane")
+    if abs(delta) > WINDOW:
+        raise InputRejected(
+            (
+                "Too late — missed the timing window."
+                if delta > 0
+                else "Too early — wait for the hit line."
+            ),
+            code="timing",
+        )
     if p.hits.filter(note=note).exists():
-        raise ValidationError("Note already judged.")
+        raise InputRejected("Note already judged.", code="duplicate")
     # A later note must not be followed by an earlier note to farm combos.
     latest = p.hits.order_by("-note").first()
     if latest and latest.note >= note:
-        raise ValidationError("Note already passed.")
+        raise InputRejected("That note has already passed.", code="out_of_order")
     if (latest and latest.note + 1 != note) or (latest is None and note != 0):
         p.combo = 0
     grade = "perfect" if abs(delta) <= 80 else "good"
@@ -98,4 +113,76 @@ def finish_if_due(code):
         room.status = Room.Status.FINISHED
         room.save(update_fields=["status"])
         room.participants.update(finished=True)
+    return room
+
+
+def owned_solo(code, user):
+    room = Room.objects.select_for_update().select_related("song").get(code=code)
+    if room.host_id != user.id:
+        raise PermissionDenied(
+            "Only the player who started this session can control it."
+        )
+    if room.mode != "solo":
+        raise ValidationError("Playback controls are available only in solo mode.")
+    return room
+
+
+@transaction.atomic
+def pause_solo(code, user):
+    owned_solo(code, user)
+    room = finish_if_due(code)
+    if room.status == Room.Status.PAUSED:
+        return room
+    if room.status != Room.Status.RUNNING:
+        raise ValidationError("Only a playing solo song can be paused.")
+    room.paused_at = timezone.now()
+    room.status = Room.Status.PAUSED
+    room.save(update_fields=["paused_at", "status"])
+    return room
+
+
+@transaction.atomic
+def resume_solo(code, user):
+    room = owned_solo(code, user)
+    if room.status == Room.Status.RUNNING:
+        return room
+    if room.status != Room.Status.PAUSED:
+        raise ValidationError("Only a paused solo song can be resumed.")
+    # Move the server origin, preserving the exact elapsed position and even a
+    # partially completed initial countdown. Time spent paused causes no misses.
+    room.starts_at += timezone.now() - room.paused_at
+    room.paused_at = None
+    room.status = Room.Status.RUNNING
+    room.save(update_fields=["starts_at", "paused_at", "status"])
+    return room
+
+
+@transaction.atomic
+def restart_solo(code, user):
+    owned_solo(code, user)
+    old = finish_if_due(code)
+    if old.status not in [
+        Room.Status.RUNNING,
+        Room.Status.PAUSED,
+        Room.Status.FINISHED,
+    ]:
+        raise ValidationError("This session has already been quit.")
+    if old.status != Room.Status.FINISHED:
+        old.status = Room.Status.ABANDONED
+        old.paused_at = None
+        old.save(update_fields=["status", "paused_at"])
+    # A fresh code prevents late packets from the previous attempt affecting it.
+    room = Room.objects.create(host=user, song=old.song, mode="solo")
+    Participation.objects.create(room=room, user=user, ready=True)
+    return start_room(room.code, user)
+
+
+@transaction.atomic
+def quit_solo(code, user):
+    owned_solo(code, user)
+    room = finish_if_due(code)
+    if room.status not in [Room.Status.ABANDONED, Room.Status.FINISHED]:
+        room.status = Room.Status.ABANDONED
+        room.paused_at = None
+        room.save(update_fields=["status", "paused_at"])
     return room

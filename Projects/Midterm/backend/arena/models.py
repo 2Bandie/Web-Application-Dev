@@ -75,6 +75,8 @@ class Room(models.Model):
         LOBBY = "lobby"
         RUNNING = "running"
         FINISHED = "finished"
+        PAUSED = "paused"
+        ABANDONED = "abandoned"
 
     code = models.CharField(
         max_length=8, unique=True, default=room_code, editable=False
@@ -95,6 +97,7 @@ class Room(models.Model):
         max_length=10, choices=Status.choices, default=Status.LOBBY
     )
     starts_at = models.DateTimeField(null=True, blank=True)
+    paused_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

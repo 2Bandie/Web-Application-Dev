@@ -125,7 +125,10 @@ function Dashboard() {
   const [history, setHistory] = useState<z.infer<typeof HistorySchema>>([]);
   const [recent, setRecent] = useState<Room[]>([]);
   const [tab, setTab] = useState<"arena" | "records">("arena");
-  const acceptRoom = useCallback((r: Room) => setRoom(r), []);
+  const acceptRoom = useCallback(
+    (r: Room) => setRoom((current) => (current?.code === r.code ? r : current)),
+    [],
+  );
   const session = useSession(room?.code ?? null, acceptRoom);
   const loadRecords = useCallback(async () => {
     const [b, h, r] = await Promise.all([
@@ -182,6 +185,19 @@ function Dashboard() {
       }),
     );
     setTab("arena");
+  }
+  async function controlSolo(action: "pause" | "resume" | "restart" | "quit") {
+    if (!room) return;
+    if (action === "resume" || action === "restart")
+      await unlockAudio().catch(() => undefined);
+    const updated = await api(`rooms/${room.code}/${action}/`, RoomSchema, {});
+    if (action === "quit") {
+      setRoom(null);
+      void loadRecords().catch((e) => setError(messageOf(e)));
+      document
+        .querySelector(".room-builder")
+        ?.scrollIntoView({ block: "start" });
+    } else setRoom(updated);
   }
   async function join(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -248,7 +264,13 @@ function Dashboard() {
         {(error || session.error) && (
           <div className="error" role="alert">
             {error || session.error}
-            <button className="text-button" onClick={() => setError("")}>
+            <button
+              className="text-button"
+              onClick={() => {
+                setError("");
+                session.dismissError();
+              }}
+            >
               Dismiss
             </button>
           </div>
@@ -285,14 +307,24 @@ function Dashboard() {
                 </div>
                 <div className="play-options">
                   <button
-                    disabled={busy || !selected || room?.status === "running"}
+                    disabled={
+                      busy ||
+                      !selected ||
+                      room?.status === "running" ||
+                      room?.status === "paused"
+                    }
                     onClick={() => void task(() => create(true))}
                   >
                     Play solo <span>→</span>
                   </button>
                   <button
                     className="secondary"
-                    disabled={busy || !selected || room?.status === "running"}
+                    disabled={
+                      busy ||
+                      !selected ||
+                      room?.status === "running" ||
+                      room?.status === "paused"
+                    }
                     onClick={() => void task(() => create())}
                   >
                     Create multiplayer room <span>＋</span>
@@ -324,7 +356,11 @@ function Dashboard() {
                     />
                     <button
                       className="secondary"
-                      disabled={busy || room?.status === "running"}
+                      disabled={
+                        busy ||
+                        room?.status === "running" ||
+                        room?.status === "paused"
+                      }
                     >
                       Join room
                     </button>
@@ -364,6 +400,47 @@ function Dashboard() {
                 <div className="game-grid">
                   <div>
                     <div className="session-controls">
+                      {room.mode === "solo" &&
+                        (room.status === "running" ||
+                          room.status === "paused") && (
+                          <div
+                            className="solo-controls"
+                            aria-label="Solo playback controls"
+                          >
+                            <button
+                              disabled={busy || session.connection !== "live"}
+                              onClick={() =>
+                                void task(() =>
+                                  controlSolo(
+                                    room.status === "paused"
+                                      ? "resume"
+                                      : "pause",
+                                  ),
+                                )
+                              }
+                            >
+                              {room.status === "paused" ? "Resume" : "Pause"}
+                            </button>
+                            <button
+                              className="secondary"
+                              disabled={busy}
+                              onClick={() =>
+                                void task(() => controlSolo("restart"))
+                              }
+                            >
+                              Start over
+                            </button>
+                            <button
+                              className="secondary"
+                              disabled={busy}
+                              onClick={() =>
+                                void task(() => controlSolo("quit"))
+                              }
+                            >
+                              Quit level
+                            </button>
+                          </div>
+                        )}
                       {room.status === "lobby" && (
                         <>
                           <button
@@ -414,7 +491,7 @@ function Dashboard() {
                           )}
                         </>
                       )}
-                      {room.status === "running" && (
+                      {room.mode !== "solo" && room.status === "running" && (
                         <span className="hint">
                           Song in progress. Missed notes cannot be replayed.
                         </span>
@@ -441,11 +518,13 @@ function Dashboard() {
                       room={room}
                       offset={session.offset}
                       hitNotes={session.hitNotes}
+                      pendingNotes={session.pendingNotes}
+                      miss={session.miss}
                       hit={session.hit}
                       enabled={session.connection === "live"}
                     />
                     <div className="feedback">
-                      <span>
+                      <span role="status" aria-live="polite">
                         {session.feedback || "YOUR NEXT GREAT RUN STARTS HERE"}
                       </span>
                       <span>
@@ -457,7 +536,9 @@ function Dashboard() {
                     players={room.participants}
                     solo={room.mode === "solo"}
                     finished={room.status === "finished"}
-                    playing={room.status === "running"}
+                    playing={
+                      room.status === "running" || room.status === "paused"
+                    }
                     userId={user.id}
                   />
                 </div>
@@ -484,20 +565,27 @@ function Dashboard() {
               <section className="recent">
                 <h3>Resume a session</h3>
                 <div className="recent-list">
-                  {recent.slice(0, 6).map((r) => (
-                    <button
-                      className="secondary"
-                      key={r.code}
-                      disabled={busy || room?.status === "running"}
-                      onClick={() =>
-                        void task(async () =>
-                          setRoom(await api(`rooms/${r.code}/`, RoomSchema)),
-                        )
-                      }
-                    >
-                      {r.code} · {r.song.title} · {r.status}
-                    </button>
-                  ))}
+                  {recent
+                    .filter((r) => r.status !== "abandoned")
+                    .slice(0, 6)
+                    .map((r) => (
+                      <button
+                        className="secondary"
+                        key={r.code}
+                        disabled={
+                          busy ||
+                          room?.status === "running" ||
+                          room?.status === "paused"
+                        }
+                        onClick={() =>
+                          void task(async () =>
+                            setRoom(await api(`rooms/${r.code}/`, RoomSchema)),
+                          )
+                        }
+                      >
+                        {r.code} · {r.song.title} · {r.status}
+                      </button>
+                    ))}
                 </div>
               </section>
             )}

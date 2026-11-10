@@ -7,6 +7,8 @@ type Props = {
   room: Room;
   offset: RefObject<number>;
   hitNotes: RefObject<Set<number>>;
+  pendingNotes: RefObject<Set<number>>;
+  miss: () => void;
   hit: (note: number, lane: number) => void;
   enabled: boolean;
   initialAudio: boolean;
@@ -15,6 +17,8 @@ export const Arena = memo(function Arena({
   room,
   offset,
   hitNotes,
+  pendingNotes,
+  miss,
   hit,
   enabled,
   initialAudio,
@@ -27,6 +31,11 @@ export const Arena = memo(function Arena({
   const [countdown, setCountdown] = useState("GET READY");
   useEffect(() => {
     function down(event: KeyboardEvent) {
+      if (
+        roomRef.current.status === "paused" ||
+        roomRef.current.status === "abandoned"
+      )
+        return;
       if (
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement ||
@@ -53,6 +62,7 @@ export const Arena = memo(function Arena({
         if (
           note.lane === lane &&
           !hitNotes.current.has(i) &&
+          !pendingNotes.current.has(i) &&
           delta < distance
         ) {
           closest = i;
@@ -60,6 +70,7 @@ export const Arena = memo(function Arena({
         }
       });
       if (closest >= 0) hit(closest, lane);
+      else if (time >= 0 && time < r.song.duration_ms) miss();
     }
     function up(event: KeyboardEvent) {
       pressed.current.delete(keys.indexOf(event.key.toLowerCase()));
@@ -75,7 +86,7 @@ export const Arena = memo(function Arena({
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
     };
-  }, [enabled, hit, hitNotes, offset]);
+  }, [enabled, hit, hitNotes, pendingNotes, miss, offset]);
   useEffect(() => setAudio(initialAudio), [initialAudio]);
   useEffect(() => {
     if (!audio || room.status !== "running" || !room.starts_at) return;
@@ -103,17 +114,23 @@ export const Arena = memo(function Arena({
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, width, height);
       const start = r.starts_at ? Date.parse(r.starts_at) : Date.now() + 3000;
-      const time = Date.now() + offset.current - start;
+      const time =
+        (r.paused_at ? Date.parse(r.paused_at) : Date.now() + offset.current) -
+        start;
       const laneWidth = width / 4;
       const line = 355;
       const label =
         r.status === "lobby"
           ? "PRACTICE YOUR KEYS"
-          : r.status === "finished"
-            ? "TRACK COMPLETE"
-            : time < 0
-              ? String(Math.ceil(-time / 1000))
-              : "ON THE BEAT";
+          : r.status === "paused"
+            ? "PAUSED"
+            : r.status === "abandoned"
+              ? "SESSION ENDED"
+              : r.status === "finished"
+                ? "TRACK COMPLETE"
+                : time < 0
+                  ? String(Math.ceil(-time / 1000))
+                  : "ON THE BEAT";
       if (label !== lastLabel) {
         setCountdown(label);
         lastLabel = label;
@@ -176,12 +193,21 @@ export const Arena = memo(function Arena({
           {audio ? "♫ Audio on" : "Enable audio"}
         </button>
       </div>
-      <canvas
-        ref={canvas}
-        className="note-canvas"
-        role="img"
-        aria-label="Notes descend in four lanes. Press D, F, J, K when a note reaches the green line."
-      />
+      <div className="instrument-stage">
+        {room.status === "paused" && (
+          <div className="pause-overlay" role="status">
+            <strong>Paused</strong>
+            <span>Your song, notes, and accuracy are on hold.</span>
+            <span>Use Resume above to keep playing.</span>
+          </div>
+        )}
+        <canvas
+          ref={canvas}
+          className="note-canvas"
+          role="img"
+          aria-label="Notes descend in four lanes. Press D, F, J, K when a note reaches the green line."
+        />
+      </div>
       <p className="hint">
         Hit the line · <kbd>D</kbd> <kbd>F</kbd> <kbd>J</kbd> <kbd>K</kbd> ·
         Perfect ±80ms / Good ±180ms

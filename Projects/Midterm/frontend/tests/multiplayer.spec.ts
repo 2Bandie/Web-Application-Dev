@@ -171,3 +171,121 @@ test("select an expert track and play solo directly with drums, without a lobby"
   });
   expect(errors).toEqual([]);
 });
+
+test("solo can pause, resume, start over and quit without saving an incomplete result", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await register(page, `controls_${Date.now()}`);
+  const createResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/rooms/solo/") && response.status() === 201,
+  );
+  await page.getByRole("button", { name: /Play solo/ }).click();
+  const initial = RoomSchema.parse(await (await createResponse).json());
+  if (!initial.starts_at) throw new Error("Missing start time");
+  await expect(page.locator(".connected")).toBeVisible();
+  await page.waitForTimeout(
+    Math.max(
+      0,
+      Date.parse(initial.starts_at) +
+        initial.song.chart[0].time -
+        Date.now() +
+        15,
+    ),
+  );
+  await page.keyboard.press("d");
+  await expect(page.locator(".score")).toHaveText("1,000");
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.locator(".pause-overlay")).toBeVisible();
+  const paused = await readRoom(page, initial.code);
+  expect(paused.status).toBe("paused");
+  const image = await page
+    .locator("canvas")
+    .evaluate((canvas) => canvas.toDataURL());
+  const accuracy = await page.locator(".accuracy-value").innerText();
+  await page.keyboard.press("f");
+  await page.waitForTimeout(1200);
+  expect(
+    await page.locator("canvas").evaluate((canvas) => canvas.toDataURL()),
+  ).toBe(image);
+  expect(await page.locator(".accuracy-value").innerText()).toBe(accuracy);
+  const scorePaused = await readRoom(page, initial.code);
+  expect(scorePaused.participants[0].score).toBe(1000);
+  expect(scorePaused.paused_at).toBe(paused.paused_at);
+  await page.getByRole("button", { name: "Resume", exact: true }).click();
+  await expect(page.locator(".pause-overlay")).toHaveCount(0);
+  const resumed = await readRoom(page, initial.code);
+  expect(resumed.status).toBe("running");
+  expect(resumed.paused_at).toBeNull();
+  expect(
+    Date.parse(resumed.starts_at!) - Date.parse(initial.starts_at),
+  ).toBeGreaterThan(1000);
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  // Reload preserves the server pause state and the accepted note.
+  await page.reload();
+  await page
+    .locator(".recent-list")
+    .getByRole("button", { name: new RegExp(initial.code) })
+    .click();
+  await expect(page.locator(".pause-overlay")).toBeVisible();
+  await expect(page.locator(".score")).toHaveText("1,000");
+  const restartResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith(`/${initial.code}/restart/`) &&
+      response.status() === 200,
+  );
+  await page.getByRole("button", { name: "Start over", exact: true }).click();
+  const restarted = RoomSchema.parse(await (await restartResponse).json());
+  expect(restarted.code).not.toBe(initial.code);
+  expect(restarted.song.id).toBe(initial.song.id);
+  await expect(page.locator(".score")).toHaveText("0");
+  await expect(page.locator(".feedback")).toContainText("BEST COMBO 0");
+  expect((await readRoom(page, initial.code)).status).toBe("abandoned");
+  await page.getByRole("button", { name: "Quit level", exact: true }).click();
+  await expect(page.locator(".instrument")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Play solo/ })).toBeEnabled();
+  expect((await readRoom(page, restarted.code)).status).toBe("abandoned");
+  await page.getByRole("button", { name: "Your records", exact: true }).click();
+  await expect(page.locator(".history-row")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("late inputs show MISS feedback without a raw Django error banner", async ({
+  page,
+}) => {
+  // Delay real outgoing hit frames to reproduce a locally valid input arriving
+  // after the authoritative server window. Authentication and other frames run normally.
+  await page.addInitScript(() => {
+    const send = WebSocket.prototype.send;
+    WebSocket.prototype.send = function (data) {
+      if (typeof data === "string" && data.includes('"type":"hit"')) {
+        const socket = this;
+        setTimeout(() => {
+          if (socket.readyState === WebSocket.OPEN) send.call(socket, data);
+        }, 350);
+      } else send.call(this, data);
+    };
+  });
+  await register(page, `timing_${Date.now()}`);
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/rooms/solo/") && response.status() === 201,
+  );
+  await page.getByRole("button", { name: /Play solo/ }).click();
+  const room = RoomSchema.parse(await (await responsePromise).json());
+  if (!room.starts_at) throw new Error("Missing start time");
+  await expect(page.locator(".connected")).toBeVisible();
+  await page.waitForTimeout(
+    Math.max(
+      0,
+      Date.parse(room.starts_at) + room.song.chart[0].time - Date.now() + 15,
+    ),
+  );
+  await page.keyboard.press("d");
+  await expect(page.locator(".feedback")).toContainText("MISS · Too late");
+  await expect(page.locator(".error")).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText("ErrorDetail");
+  await page.getByRole("button", { name: "Quit level", exact: true }).click();
+});
