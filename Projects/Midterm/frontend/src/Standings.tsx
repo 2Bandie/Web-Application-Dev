@@ -61,12 +61,7 @@ export function Standings({
             </small>
           </div>
         ))}
-      <p className="hint">
-        Perfect = 100% weight · Good = 60% · Miss = 0%
-        <br />
-        Live accuracy counts judged notes; final accuracy includes every note.
-        Everyone finishes the song together.
-      </p>
+      <p className="hint">Perfect = 100% weight · Good = 60% · Miss = 0%</p>
     </section>
   );
 }

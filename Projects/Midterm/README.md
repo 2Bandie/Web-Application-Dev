@@ -203,4 +203,6 @@ Review changes and make meaningful commits as you understand and extend each fea
 
 ### Visual feedback
 
-The dashboard uses a vibrant cyan/purple stage palette and the heading **Feel the Beat**, with no bottom footer. **Best Combo** is enlarged below the lanes. Perfect hits show a bouncing **Perfect!** burst, good hits show **Good!**, and unplayed or mistimed notes show **Miss**. Each burst fades out after 650ms; reduced-motion settings use a simple fade instead of a bounce. Glow is the renamed original easy song, with the same chart ID and historical results preserved by migration.
+The dashboard uses a bright mint, coral, and warm-yellow palette and the heading **Feel the Beat**, with no bottom footer. **Best Combo** is enlarged below the lanes. Perfect hits show a bouncing **Perfect!** burst, good hits show **Good!**, and unplayed or mistimed notes show **Miss**. Each burst fades out after 650ms; reduced-motion settings use a simple fade instead of a bounce. Glow is the renamed original easy song, with the same chart ID and historical results preserved by migration.
+
+The login card now places the Pulse logo above a larger “Find your frequency” tagline. Dashboard panels use the concise PICK YOUR TRACK and PLAY WITH OTHERS headings. The previous marketing copy and extra live-accuracy explanation have been removed.

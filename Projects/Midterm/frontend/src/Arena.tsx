@@ -3,7 +3,7 @@ import { soundtrack, unlockAudio } from "./audio";
 import type { Room } from "./types";
 import type { HitBurst } from "./useSession";
 const keys = ["d", "f", "j", "k"];
-const colors = ["#58ffd4", "#54cfff", "#d791ff", "#ffb556"];
+const colors = ["#72ffc3", "#ffe270", "#ffb97b", "#ff8f9e"];
 type Props = {
   room: Room;
   offset: RefObject<number>;
@@ -171,10 +171,10 @@ export const Arena = memo(function Arena({
       }
       for (let lane = 0; lane < 4; lane++) {
         ctx.fillStyle = pressed.current.has(lane)
-          ? "#423771"
+          ? "#39734b"
           : lane % 2
-            ? "#201a3b"
-            : "#171c39";
+            ? "#183d2c"
+            : "#123426";
         ctx.fillRect(lane * laneWidth + 1, 0, laneWidth - 2, height);
         ctx.fillStyle = colors[lane];
         ctx.globalAlpha = 0.6;

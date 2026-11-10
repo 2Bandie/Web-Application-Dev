@@ -39,21 +39,14 @@ function AuthScreen() {
   }
   return (
     <main className="auth-shell">
-      <div className="brand">
-        <span className="brand-mark">≋</span>PULSE
-        <span className="brand-sub">RHYTHM ARENA</span>
-      </div>
       <section className="auth-card">
-        <span className="eyebrow">FIND YOUR FREQUENCY</span>
-        <h1>
-          Good rhythm.
-          <br />
-          Great company.
+        <h1 className="brand auth-brand">
+          <span className="brand-mark" aria-hidden="true">
+            ≋
+          </span>
+          Pulse
         </h1>
-        <p>
-          Four lanes. One shared beat. Challenge your friends to an accuracy
-          showdown.
-        </p>
+        <p className="auth-tagline">Find your frequency</p>
         <form onSubmit={(e) => void submit(e)}>
           <label>
             Username
@@ -87,7 +80,7 @@ function AuthScreen() {
               : register
                 ? "Create account"
                 : "Enter the arena"}{" "}
-            <span>↗</span>
+            <span>→</span>
           </button>
         </form>
         <button
@@ -107,9 +100,6 @@ function AuthScreen() {
           </p>
         )}
       </section>
-      <p className="auth-footer">
-        NO DOWNLOADS. NO LICENSED MUSIC. JUST THE BEAT.
-      </p>
     </main>
   );
 }
@@ -268,8 +258,7 @@ function Dashboard() {
           <>
             <div className="setup-grid">
               <section className="panel room-builder">
-                <span className="eyebrow">01 / PICK YOUR TRACK</span>
-                <h2>Set the tempo.</h2>
+                <h2 className="panel-title">PICK YOUR TRACK</h2>
                 <div className="track-options">
                   {songs.map((s) => (
                     <button
@@ -325,11 +314,10 @@ function Dashboard() {
                 </p>
               </section>
               <section className="panel invite-panel">
-                <span className="eyebrow">02 / BRING YOUR PEOPLE</span>
-                <h2>Better with a rival.</h2>
+                <h2 className="panel-title">PLAY WITH OTHERS</h2>
                 <p>
-                  Create a room and share its code, or drop into a friend’s
-                  lobby. Up to four players, one synchronized start.
+                  Create a room and share the room code, or play in another
+                  friend’s lobby. Up to four players.
                 </p>
                 <form onSubmit={(e) => void join(e)}>
                   <label htmlFor="room-code">Room code</label>
@@ -615,7 +603,6 @@ function Dashboard() {
             </section>
             <section className="panel">
               <span className="eyebrow">YOUR LAST 20 RUNS</span>
-              <h2>Every beat, on record.</h2>
               {history.length === 0 && (
                 <p>Complete a song to start your history.</p>
               )}
