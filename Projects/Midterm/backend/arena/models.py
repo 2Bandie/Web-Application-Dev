@@ -42,6 +42,25 @@ class Song(models.Model):
     bpm = models.PositiveIntegerField(
         validators=[MinValueValidator(60), MaxValueValidator(240)]
     )
+    difficulty = models.CharField(
+        max_length=12,
+        choices=[
+            ("easy", "Easy"),
+            ("normal", "Normal"),
+            ("hard", "Hard"),
+            ("expert", "Expert"),
+        ],
+        default="easy",
+    )
+    arrangement = models.CharField(
+        max_length=12,
+        choices=[
+            ("ambient", "Ambient"),
+            ("house", "House"),
+            ("breakbeat", "Breakbeat"),
+        ],
+        default="ambient",
+    )
     chart = models.JSONField(validators=[validate_chart])
     duration_ms = models.PositiveIntegerField()
 
@@ -65,7 +84,12 @@ class Room(models.Model):
     )
     song = models.ForeignKey(Song, on_delete=models.PROTECT, related_name="rooms")
     players = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, through="Participation", related_name="race_rooms"
+        settings.AUTH_USER_MODEL, through="Participation", related_name="session_rooms"
+    )
+    mode = models.CharField(
+        max_length=12,
+        choices=[("solo", "Solo"), ("multiplayer", "Multiplayer")],
+        default="multiplayer",
     )
     status = models.CharField(
         max_length=10, choices=Status.choices, default=Status.LOBBY

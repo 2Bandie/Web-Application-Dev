@@ -9,6 +9,8 @@ export const SongSchema = z.object({
   id: z.number(),
   title: z.string(),
   bpm: z.number(),
+  difficulty: z.enum(["easy", "normal", "hard", "expert"]),
+  arrangement: z.enum(["ambient", "house", "breakbeat"]),
   duration_ms: z.number(),
   chart: z.array(NoteSchema),
 });
@@ -27,6 +29,7 @@ export type Player = z.infer<typeof PlayerSchema>;
 export const RoomSchema = z.object({
   code: z.string(),
   host_id: z.number(),
+  mode: z.enum(["solo", "multiplayer"]),
   song: SongSchema,
   status: z.enum(["lobby", "running", "finished"]),
   starts_at: z.string().nullable(),
@@ -41,7 +44,9 @@ export const LeaderboardSchema = z.array(
   z.object({
     user_id: z.number(),
     user__username: z.string(),
-    best_score: z.number(),
+    best_accuracy: z.number(),
+    song_id: z.number(),
+    song_title: z.string(),
   }),
 );
 export const HistorySchema = z.array(

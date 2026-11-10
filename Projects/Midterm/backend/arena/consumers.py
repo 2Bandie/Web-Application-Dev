@@ -27,7 +27,7 @@ def snapshot(code, user):
     finish_if_due(code)
     room = (
         Room.objects.select_related("song")
-        .prefetch_related("participants__user")
+        .prefetch_related("participants__user", "participants__hits")
         .get(code=code)
     )
     p = Participation.objects.get(room=room, user=user)
@@ -39,7 +39,7 @@ def snapshot(code, user):
     }
 
 
-class RaceConsumer(AsyncWebsocketConsumer):
+class SessionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = None
         self.code = self.scope["url_route"]["kwargs"]["code"]

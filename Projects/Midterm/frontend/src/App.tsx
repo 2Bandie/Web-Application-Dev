@@ -10,7 +10,7 @@ import {
   type Room,
   type Song,
 } from "./types";
-import { useRace } from "./useRace";
+import { useSession } from "./useSession";
 import { Arena } from "./Arena";
 import { Standings } from "./Standings";
 import { unlockAudio } from "./audio";
@@ -51,7 +51,7 @@ function AuthScreen() {
           Great company.
         </h1>
         <p>
-          Four lanes. One shared beat. Race your friends in a live rhythm
+          Four lanes. One shared beat. Challenge your friends to an accuracy
           showdown.
         </p>
         <form onSubmit={(e) => void submit(e)}>
@@ -120,12 +120,13 @@ function Dashboard() {
   const [selected, setSelected] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const [board, setBoard] = useState<z.infer<typeof LeaderboardSchema>>([]);
   const [history, setHistory] = useState<z.infer<typeof HistorySchema>>([]);
   const [recent, setRecent] = useState<Room[]>([]);
   const [tab, setTab] = useState<"arena" | "records">("arena");
   const acceptRoom = useCallback((r: Room) => setRoom(r), []);
-  const race = useRace(room?.code ?? null, acceptRoom);
+  const session = useSession(room?.code ?? null, acceptRoom);
   const loadRecords = useCallback(async () => {
     const [b, h, r] = await Promise.all([
       api("leaderboard/", LeaderboardSchema),
@@ -149,6 +150,16 @@ function Dashboard() {
     if (room?.status === "finished")
       void loadRecords().catch((e) => setError(messageOf(e)));
   }, [room?.status, loadRecords]);
+  useEffect(() => {
+    if (room?.status === "running") {
+      document.querySelector(".session-heading")?.scrollIntoView({
+        block: "start",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
+    }
+  }, [room?.code, room?.status]);
   async function task(action: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -160,8 +171,16 @@ function Dashboard() {
       setBusy(false);
     }
   }
-  async function create() {
-    setRoom(await api("rooms/", RoomSchema, { song_id: selected }));
+  async function create(solo = false) {
+    if (solo)
+      await unlockAudio()
+        .then(() => setAudioEnabled(true))
+        .catch(() => setAudioEnabled(false));
+    setRoom(
+      await api(solo ? "rooms/solo/" : "rooms/", RoomSchema, {
+        song_id: selected,
+      }),
+    );
     setTab("arena");
   }
   async function join(event: FormEvent<HTMLFormElement>) {
@@ -226,9 +245,9 @@ function Dashboard() {
             <span className="status-dot" /> ORIGINAL SYNTH TRACKS
           </span>
         </div>
-        {(error || race.error) && (
+        {(error || session.error) && (
           <div className="error" role="alert">
-            {error || race.error}
+            {error || session.error}
             <button className="text-button" onClick={() => setError("")}>
               Dismiss
             </button>
@@ -245,6 +264,7 @@ function Dashboard() {
                     <button
                       className={`track ${selected === s.id ? "selected" : ""}`}
                       key={s.id}
+                      aria-pressed={selected === s.id}
                       onClick={() => setSelected(s.id)}
                     >
                       <span className="track-art">
@@ -253,19 +273,35 @@ function Dashboard() {
                       <span>
                         <strong>{s.title}</strong>
                         <small>
-                          {s.bpm} BPM · {s.chart.length} notes · 4 lanes
+                          {s.difficulty.toUpperCase()} · {s.bpm} BPM
+                          <br />
+                          {Math.round(s.duration_ms / 1000)} sec ·{" "}
+                          {s.chart.length} notes
                         </small>
                       </span>
                       <span className="radio-dot" />
                     </button>
                   ))}
                 </div>
-                <button
-                  disabled={busy || !selected || room?.status === "running"}
-                  onClick={() => void task(create)}
-                >
-                  Create a room <span>↗</span>
-                </button>
+                <div className="play-options">
+                  <button
+                    disabled={busy || !selected || room?.status === "running"}
+                    onClick={() => void task(() => create(true))}
+                  >
+                    Play solo <span>→</span>
+                  </button>
+                  <button
+                    className="secondary"
+                    disabled={busy || !selected || room?.status === "running"}
+                    onClick={() => void task(() => create())}
+                  >
+                    Create multiplayer room <span>＋</span>
+                  </button>
+                </div>
+                <p className="hint">
+                  Solo starts your selected song immediately after a countdown.
+                  No room code or ready button needed.
+                </p>
               </section>
               <section className="panel invite-panel">
                 <span className="eyebrow">02 / BRING YOUR PEOPLE</span>
@@ -295,13 +331,14 @@ function Dashboard() {
                   </div>
                 </form>
                 <p className="hint">
-                  Solo runs work too. Each player needs a separate account.
+                  Choose Play solo for single-player. Multiplayer needs a
+                  separate account per player.
                 </p>
               </section>
             </div>
             {room ? (
               <>
-                <div className="race-heading">
+                <div className="session-heading">
                   <div>
                     <span className="eyebrow">YOUR LIVE SESSION</span>
                     <h2>
@@ -310,25 +347,33 @@ function Dashboard() {
                     </h2>
                   </div>
                   <div className="room-code">
-                    ROOM <strong>{room.code}</strong>
+                    {room.mode === "solo" ? (
+                      "SOLO PLAY"
+                    ) : (
+                      <>
+                        ROOM <strong>{room.code}</strong>
+                      </>
+                    )}
                     <span
-                      className={`connection ${race.connection === "live" ? "connected" : ""}`}
+                      className={`connection ${session.connection === "live" ? "connected" : ""}`}
                     >
-                      ● {race.connection}
+                      ● {session.connection}
                     </span>
                   </div>
                 </div>
                 <div className="game-grid">
                   <div>
-                    <div className="race-controls">
+                    <div className="session-controls">
                       {room.status === "lobby" && (
                         <>
                           <button
                             className="secondary"
-                            disabled={busy || race.connection !== "live"}
+                            disabled={busy || session.connection !== "live"}
                             onClick={() =>
                               void task(async () => {
-                                await unlockAudio().catch(() => undefined);
+                                await unlockAudio()
+                                  .then(() => setAudioEnabled(true))
+                                  .catch(() => undefined);
                                 setRoom(
                                   await api(
                                     `rooms/${room.code}/ready/`,
@@ -345,7 +390,7 @@ function Dashboard() {
                             <button
                               disabled={
                                 busy ||
-                                race.connection !== "live" ||
+                                session.connection !== "live" ||
                                 !room.participants.every((p) => p.ready)
                               }
                               onClick={() =>
@@ -360,7 +405,7 @@ function Dashboard() {
                                 })
                               }
                             >
-                              Start race →
+                              Start song →
                             </button>
                           ) : (
                             <span className="hint">
@@ -371,31 +416,37 @@ function Dashboard() {
                       )}
                       {room.status === "running" && (
                         <span className="hint">
-                          Race in progress. Missed notes cannot be replayed.
+                          Song in progress. Missed notes cannot be replayed.
                         </span>
                       )}
                       {room.status === "finished" && (
                         <>
                           <strong>
-                            Race complete · {self?.accuracy.toFixed(1)}%
+                            Song complete · {self?.accuracy.toFixed(1)}%
                             accuracy
                           </strong>
-                          <button onClick={() => void task(create)}>
-                            Race again ↗
+                          <button
+                            onClick={() =>
+                              void task(() => create(room.mode === "solo"))
+                            }
+                          >
+                            Play again →
                           </button>
                         </>
                       )}
                     </div>
                     <Arena
+                      key={room.code}
+                      initialAudio={audioEnabled}
                       room={room}
-                      offset={race.offset}
-                      hitNotes={race.hitNotes}
-                      hit={race.hit}
-                      enabled={race.connection === "live"}
+                      offset={session.offset}
+                      hitNotes={session.hitNotes}
+                      hit={session.hit}
+                      enabled={session.connection === "live"}
                     />
                     <div className="feedback">
                       <span>
-                        {race.feedback || "YOUR NEXT GREAT RUN STARTS HERE"}
+                        {session.feedback || "YOUR NEXT GREAT RUN STARTS HERE"}
                       </span>
                       <span>
                         BEST COMBO <strong>{self?.max_combo ?? 0}</strong>
@@ -404,7 +455,9 @@ function Dashboard() {
                   </div>
                   <Standings
                     players={room.participants}
-                    total={room.song.chart.length * 1000}
+                    solo={room.mode === "solo"}
+                    finished={room.status === "finished"}
+                    playing={room.status === "running"}
                     userId={user.id}
                   />
                 </div>
@@ -414,7 +467,10 @@ function Dashboard() {
                 <span>◌</span>
                 <div>
                   <h3>The stage is yours.</h3>
-                  <p>Create or join a room to light up the track.</p>
+                  <p>
+                    Pick a song and play solo, or invite friends to compare
+                    accuracy.
+                  </p>
                 </div>
                 <div className="key-preview">
                   <kbd>D</kbd>
@@ -426,7 +482,7 @@ function Dashboard() {
             )}
             {recent.length > 0 && (
               <section className="recent">
-                <h3>Return to a room</h3>
+                <h3>Resume a session</h3>
                 <div className="recent-list">
                   {recent.slice(0, 6).map((r) => (
                     <button
@@ -450,37 +506,40 @@ function Dashboard() {
           <div className="records-grid">
             <section className="panel">
               <span className="eyebrow">GLOBAL / ALL TIME</span>
-              <h2>The high-score club.</h2>
+              <h2>The accuracy leaderboard.</h2>
               <p className="hint">
-                Best completed score per player. Both tracks have 32 notes.
+                Best completed accuracy per player and song. Compare
+                performances on the same track.
               </p>
               <table>
                 <thead>
                   <tr>
                     <th>Rank</th>
                     <th>Player</th>
-                    <th>Best score</th>
+                    <th>Song</th>
+                    <th>Accuracy</th>
                   </tr>
                 </thead>
                 <tbody>
                   {board.map((p, i) => (
-                    <tr key={p.user_id}>
+                    <tr key={`${p.user_id}-${p.song_id}`}>
                       <td>{i + 1}</td>
                       <td>{p.user__username}</td>
-                      <td>{p.best_score.toLocaleString()}</td>
+                      <td>{p.song_title}</td>
+                      <td>{p.best_accuracy.toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {board.length === 0 && (
-                <p>No completed runs yet. Set the first score.</p>
+                <p>No completed songs yet. Set the first accuracy record.</p>
               )}
             </section>
             <section className="panel">
               <span className="eyebrow">YOUR LAST 20 RUNS</span>
               <h2>Every beat, on record.</h2>
               {history.length === 0 && (
-                <p>Complete a race to start your history.</p>
+                <p>Complete a song to start your history.</p>
               )}
               {history.map((h) => (
                 <div className="history-row" key={h.code}>
@@ -502,7 +561,9 @@ function Dashboard() {
         )}
         <footer>
           <span>MADE FOR THE MOMENT BETWEEN BEATS.</span>
-          <span>32 notes · Server-verified scores · No pay-to-win</span>
+          <span>
+            Four tracks · Server-verified accuracy · Solo or multiplayer
+          </span>
         </footer>
       </main>
     </div>

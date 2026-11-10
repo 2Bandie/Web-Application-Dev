@@ -161,7 +161,7 @@ class ApiTests(TestCase):
         self.assertTrue(p.finished)
         self.assertAlmostEqual(p.accuracy, 6.25)
         board = self.client.get("/api/leaderboard/").data
-        self.assertEqual(board[0]["best_score"], 2000)
+        self.assertAlmostEqual(board[0]["best_accuracy"], 6.25)
         self.assertEqual(len(self.client.get("/api/history/").data), 1)
 
     def test_leaderboard_excludes_unfinished_and_uses_best_per_player(self):
@@ -169,14 +169,104 @@ class ApiTests(TestCase):
         p = self.room.participants.get(user=self.host)
         p.finished = True
         p.score = 1200
+        p.accuracy = 3.75
         p.save()
         second = Room.objects.create(host=self.host, song=self.song, status="finished")
         Participation.objects.create(
-            room=second, user=self.host, score=500, finished=True
+            room=second, user=self.host, score=500, accuracy=1.5625, finished=True
         )
         board = self.client.get("/api/leaderboard/").data
         self.assertEqual(len(board), 1)
-        self.assertEqual(board[0]["best_score"], 1200)
+        self.assertEqual(board[0]["best_accuracy"], 3.75)
+
+    def test_solo_starts_selected_song_and_remains_private(self):
+        song = Song.objects.get(title="Overdrive")
+        response = self.client.post("/api/rooms/solo/", {"song_id": song.id})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["song"]["id"], song.id)
+        self.assertEqual(response.data["mode"], "solo")
+        self.assertEqual(response.data["status"], "running")
+        self.assertTrue(response.data["participants"][0]["ready"])
+        room = Room.objects.get(code=response.data["code"])
+        self.assertGreater(room.starts_at, timezone.now())
+        self.assertEqual(room.participants.count(), 1)
+        self.client.force_authenticate(self.rival)
+        self.assertEqual(
+            self.client.post(f"/api/rooms/{room.code}/join/").status_code, 400
+        )
+        room.refresh_from_db()
+        self.assertEqual(room.participants.count(), 1)
+        self.assertEqual(
+            self.client.post("/api/rooms/solo/", {"song_id": 999999}).status_code, 400
+        )
+        self.assertEqual(
+            APIClient().post("/api/rooms/solo/", {"song_id": song.id}).status_code, 401
+        )
+
+    def test_solo_creation_rolls_back_if_start_fails(self):
+        count = Room.objects.count()
+        with patch(
+            "arena.views.start_room", side_effect=ValidationError("Cannot start")
+        ):
+            self.assertEqual(
+                self.client.post(
+                    "/api/rooms/solo/", {"song_id": self.song.id}
+                ).status_code,
+                400,
+            )
+        self.assertEqual(Room.objects.count(), count)
+
+    def test_longer_tracks_have_valid_musical_grids_and_expert_density(self):
+        self.assertEqual(Song.objects.count(), 4)
+        hard = Song.objects.get(title="Midnight Drive")
+        expert = Song.objects.get(title="Overdrive")
+        self.assertGreater(hard.duration_ms, 45000)
+        self.assertGreater(expert.duration_ms, hard.duration_ms)
+        self.assertEqual(expert.difficulty, "expert")
+        self.assertGreater(
+            len(expert.chart) / expert.duration_ms, len(hard.chart) / hard.duration_ms
+        )
+        self.assertEqual(hard.arrangement, "house")
+        self.assertEqual(expert.arrangement, "breakbeat")
+        for song in (hard, expert):
+            song.full_clean()
+            self.assertGreater(song.duration_ms, song.chart[-1]["time"] + 500)
+
+    def test_live_accuracy_counts_judged_notes_and_misses(self):
+        self.begin()
+        with patch("arena.services.elapsed", return_value=1500):
+            record_hit(self.room.code, self.host, 0, 0)
+        self.room.starts_at = timezone.now() - timedelta(milliseconds=1600)
+        self.room.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["participants"][0]["accuracy"], 100)
+        self.room.starts_at = timezone.now() - timedelta(milliseconds=2400)
+        self.room.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["participants"][0]["accuracy"], 50)
+        self.room.starts_at = timezone.now() - timedelta(minutes=3)
+        self.room.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["participants"][0]["accuracy"], 3.125)
+
+    def test_accuracy_leaderboard_separates_songs_and_ignores_raw_score_advantage(self):
+        p = self.room.participants.get(user=self.host)
+        p.score, p.accuracy, p.finished = 16000, 50, True
+        p.save()
+        long_room = Room.objects.create(
+            host=self.rival, song=Song.objects.get(title="Overdrive"), status="finished"
+        )
+        Participation.objects.create(
+            room=long_room, user=self.rival, score=200000, accuracy=40, finished=True
+        )
+        Participation.objects.create(
+            room=long_room, user=self.host, score=150000, accuracy=30, finished=True
+        )
+        board = self.client.get("/api/leaderboard/").data
+        self.assertEqual(board[0]["user_id"], self.host.id)
+        self.assertEqual(board[0]["best_accuracy"], 50)
+        self.assertEqual(board[0]["song_title"], self.song.title)
+        self.assertEqual(len(board), 3)
 
     def test_chart_validation(self):
         for chart in [

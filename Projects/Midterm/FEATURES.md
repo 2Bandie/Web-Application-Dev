@@ -1,23 +1,23 @@
 # Fifteen implemented features and grading evidence
 
-The typing-race concept becomes a rhythm race: characters → lane notes; typing accuracy → timing judgement; WPM → score/accuracy/combo; paragraph progress → avatar tracks. The multiplayer/database/client-server engineering requirements remain.
+The original typing competition becomes an accuracy-based rhythm game: characters → lane notes; typing accuracy → timing judgement; WPM → score/accuracy/combo; paragraph progress → live accuracy meters. The multiplayer/database/client-server engineering requirements remain.
 
 | # | Feature / change | Where implemented | How to demonstrate | Rubric evidence |
 | --- | --- | --- | --- | --- |
 | 1 | Player registration and related profiles | `backend/arena/models.py`, `serializers.py` | Create a new account; weak/duplicate credentials fail clearly | One-to-One model, validation, migrations |
 | 2 | JWT sign-in, refresh, and access guards | `backend/config/urls.py`, `frontend/src/auth.tsx`, `api.ts` | Sign in; anonymous protected API calls return 401 | DRF authentication + permissions, Context |
-| 3 | Database-backed selectable rhythm charts | `backend/arena/migrations/0002_seed_tracks.py`, `models.py` | Choose Afterglow or Neon Circuit | JSON chart validation, read-only REST catalog, typed payloads |
-| 4 | Code-based rooms with four-player capacity | `models.py`, `services.py`, `views.py` | Create a room, join from another account; fifth player is rejected | Foreign Keys, Many-to-Many through Participation, transactions |
+| 3 | Database-backed selectable rhythm charts | `backend/arena/migrations/0002_seed_tracks.py`, `0004_add_longer_tracks.py`, `models.py` | Choose any of four tracks, including 48-second Midnight Drive and 58-second expert Overdrive | JSON chart validation, read-only REST catalog, typed payloads |
+| 4 | Code-based rooms with four-player capacity | `models.py`, `services.py`, `views.py` | Use Play solo to start privately, or create a multiplayer room; fifth player is rejected | Foreign Keys, Many-to-Many through Participation, transactions |
 | 5 | Ready lobby and host-only controls | `services.py`, `App.tsx` | Everyone readies up; only the host can start | Role-based guards and validated state transitions |
-| 6 | Shared three-second server countdown | `services.py`, `useRace.ts`, `Arena.tsx` | Both browsers start from the same server timestamp | Client-server coordination, clock calibration |
+| 6 | Shared three-second server countdown | `services.py`, `useSession.ts`, `Arena.tsx` | Both browsers start from the same server timestamp | Client-server coordination, clock calibration |
 | 7 | Four-lane keyboard rhythm engine | `frontend/src/Arena.tsx` | Press D/F/J/K at the hit line; repeat events are ignored | Typed keyboard events, canvas rendering, ref-based frame state |
 | 8 | Server-authoritative timing judgement | `backend/arena/services.py`, `consumers.py` | Perfect/good feedback; out-of-window and duplicate inputs fail | Transactional score engine, packet validation |
 | 9 | Combos, weighted accuracy, and final results | `models.py`, `services.py`, `App.tsx` | Hit consecutive notes, skip one, inspect max combo and accuracy | Persistent calculations and idempotent finalization |
-| 10 | Live multiplayer score distribution | `consumers.py`, `useRace.ts`, `Standings.tsx` | A hit immediately appears in the rival browser | Authenticated Channels groups + periodic authoritative snapshots |
-| 11 | Animated competitor avatar tracks | `frontend/src/Standings.tsx` | Avatars move proportional to earned score | Presentational component, canvas animation without per-frame React renders |
-| 12 | Original synthesized audio and track difficulty | `frontend/src/audio.ts`, `Arena.tsx` | Enable audio; compare 100 vs 140 BPM | Web Audio scheduling, no external music service |
-| 13 | Personal history and global historical leaderboard | `backend/arena/views.py`, `frontend/src/App.tsx` | Finish a race and open Your records | Aggregate queries, related-model loading, typed API client |
-| 14 | Reconnection and reload recovery | `frontend/src/useRace.ts`, `App.tsx` | Reload, return to room; accepted notes/scores remain | Backoff, JWT refresh, authoritative recovery snapshots |
+| 10 | Live multiplayer score distribution | `consumers.py`, `useSession.ts`, `Standings.tsx` | A hit immediately appears in the rival browser | Authenticated Channels groups + periodic authoritative snapshots |
+| 11 | Live competitor accuracy meters | `frontend/src/Standings.tsx` | Percentages compare timing accuracy; everyone finishes together | Presentational component, accessible meters, accuracy-based ordering |
+| 12 | Original synthesized audio and track difficulty | `frontend/src/audio.ts`, `Arena.tsx` | Enable audio; compare original melodies with house/breakbeat drums, bass, and 176 BPM expert streams | Web Audio scheduling, no external music service |
+| 13 | Personal history and global per-song accuracy leaderboard | `backend/arena/views.py`, `frontend/src/App.tsx` | Finish a session and open Your records | Aggregate queries, related-model loading, typed API client |
+| 14 | Reconnection and reload recovery | `frontend/src/useSession.ts`, `App.tsx` | Reload, return to room; accepted notes/scores remain | Backoff, JWT refresh, authoritative recovery snapshots |
 | 15 | Accessible interface and resilient errors | `frontend/src/ErrorBoundary.tsx`, `api.ts`, `style.css`, `backend/arena/exceptions.py` | Invalid room code, unauthorized action, or stopped API shows an error; keyboard focus remains visible | Error boundary, role alerts, form validation, responsive layout, transaction error handling |
 
 ## Rubric crosswalk
@@ -35,9 +35,17 @@ The typing-race concept becomes a rhythm race: characters → lane notes; typing
 2. Run backend tests and the strict frontend build.
 3. Open two browser profiles with different accounts.
 4. Create/join a room, ready up, start, and play several notes.
-5. Point out live competitor score/avatars and timing feedback.
+5. Point out live competitor accuracy meters and timing feedback.
 6. Reload a player and resume through Return to a room.
 7. Finish, then show personal history and the global board.
 8. Explain the single-worker/SQLite development limit and server-receive-time latency tradeoff.
 
 See `README.md` for exact startup commands, API/socket formats, scoring math, and deployment boundaries.
+
+## Latest additions
+
+- Two longer tracks (hard Midnight Drive and expert Overdrive), with per-song difficulty and arrangement metadata.
+- Dedicated one-click solo endpoint/UI, private sessions, automatic readiness/countdown, and saved solo results.
+- Accuracy-first standings and song-specific leaderboard records; longer charts have no raw-points advantage.
+- Synthesized kick, snare, hi-hats, bass, and chords scheduled independently of canvas rendering, with mute cleanup.
+- Additive migrations, Windows update instructions, and tests for solo privacy/rollback, catalog density, live accuracy, ranking fairness, and browser playback.

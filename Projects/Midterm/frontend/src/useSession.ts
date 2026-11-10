@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PacketSchema, type Room } from "./types";
 import { refreshAccess } from "./api";
-export function useRace(code: string | null, onRoom: (room: Room) => void) {
+export function useSession(code: string | null, onRoom: (room: Room) => void) {
   const [connection, setConnection] = useState("offline");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");

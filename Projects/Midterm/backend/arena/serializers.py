@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 from .models import Profile, Song, Room, Participation
 
@@ -30,10 +31,32 @@ class RegisterSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ["id", "title", "bpm", "chart", "duration_ms"]
+        fields = [
+            "id",
+            "title",
+            "bpm",
+            "difficulty",
+            "arrangement",
+            "chart",
+            "duration_ms",
+        ]
 
 
 class PlayerSerializer(serializers.ModelSerializer):
+    accuracy = serializers.SerializerMethodField()
+
+    def get_accuracy(self, obj):
+        room = obj.room
+        if obj.finished or room.status == "finished":
+            return obj.accuracy
+        if not room.starts_at:
+            return 0.0
+        elapsed = (timezone.now() - room.starts_at).total_seconds() * 1000
+        expired = sum(note["time"] < elapsed - 180 for note in room.song.chart)
+        last_hit = max((hit.note + 1 for hit in obj.hits.all()), default=0)
+        judged = max(expired, last_hit)
+        return obj.score / (judged * 1000) * 100 if judged else 0.0
+
     username = serializers.CharField(source="user.username", read_only=True)
     user_id = serializers.IntegerField(read_only=True)
 
@@ -57,7 +80,15 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ["code", "host_id", "song", "status", "starts_at", "participants"]
+        fields = [
+            "code",
+            "host_id",
+            "song",
+            "mode",
+            "status",
+            "starts_at",
+            "participants",
+        ]
 
 
 class CreateRoomSerializer(serializers.Serializer):

@@ -8,13 +8,13 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import OriginValidator
 from django.conf import settings
 from django.urls import path
-from arena.consumers import RaceConsumer
+from arena.consumers import SessionConsumer
 
 application = ProtocolTypeRouter(
     {
         "http": django_app,
         "websocket": OriginValidator(
-            URLRouter([path("ws/rooms/<str:code>/", RaceConsumer.as_asgi())]),
+            URLRouter([path("ws/rooms/<str:code>/", SessionConsumer.as_asgi())]),
             settings.CORS_ALLOWED_ORIGINS,
         ),
     }

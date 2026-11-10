@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState, type RefObject } from "react";
-import { audioContext, tone, unlockAudio } from "./audio";
+import { soundtrack, unlockAudio } from "./audio";
 import type { Room } from "./types";
 const keys = ["d", "f", "j", "k"];
 const colors = ["#a6f5ba", "#9bcbff", "#d1b3ff", "#ffbd8a"];
@@ -9,6 +9,7 @@ type Props = {
   hitNotes: RefObject<Set<number>>;
   hit: (note: number, lane: number) => void;
   enabled: boolean;
+  initialAudio: boolean;
 };
 export const Arena = memo(function Arena({
   room,
@@ -16,12 +17,13 @@ export const Arena = memo(function Arena({
   hitNotes,
   hit,
   enabled,
+  initialAudio,
 }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const roomRef = useRef(room);
   roomRef.current = room;
   const pressed = useRef(new Set<number>());
-  const [audio, setAudio] = useState(false);
+  const [audio, setAudio] = useState(initialAudio);
   const [countdown, setCountdown] = useState("GET READY");
   useEffect(() => {
     function down(event: KeyboardEvent) {
@@ -74,10 +76,18 @@ export const Arena = memo(function Arena({
       window.removeEventListener("blur", blur);
     };
   }, [enabled, hit, hitNotes, offset]);
+  useEffect(() => setAudio(initialAudio), [initialAudio]);
+  useEffect(() => {
+    if (!audio || room.status !== "running" || !room.starts_at) return;
+    return soundtrack(
+      room.song,
+      Date.parse(room.starts_at),
+      () => Date.now() + offset.current,
+    );
+  }, [audio, room.code, room.status, room.starts_at, room.song.id, offset]);
   useEffect(() => {
     let frame = 0;
     let lastLabel = "";
-    const scheduled = new Set<number>();
     function draw() {
       const r = roomRef.current;
       const el = canvas.current;
@@ -123,16 +133,12 @@ export const Arena = memo(function Arena({
         ctx.textAlign = "center";
         ctx.fillText(keys[lane].toUpperCase(), laneWidth * (lane + 0.5), 405);
       }
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, width, line + 28);
+      ctx.clip();
       if (r.status !== "lobby")
         r.song.chart.forEach((note, index) => {
-          if (r.status === "running" && audio && !scheduled.has(index)) {
-            const seconds = (note.time - time) / 1000;
-            const ac = audioContext();
-            if (ac && seconds >= 0 && seconds < 0.15) {
-              tone(ac.currentTime + seconds, note.lane, index % 4 === 0);
-              scheduled.add(index);
-            }
-          }
           const y = line - (note.time - time) * 0.22;
           if (y < -15 || y > height || hitNotes.current.has(index)) return;
           ctx.fillStyle =
@@ -147,6 +153,7 @@ export const Arena = memo(function Arena({
           );
           ctx.fill();
         });
+      ctx.restore();
       frame = requestAnimationFrame(draw);
     }
     frame = requestAnimationFrame(draw);

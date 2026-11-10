@@ -20,8 +20,10 @@ def join_room(code, user):
     room = Room.objects.select_for_update().get(code=code)
     if Participation.objects.filter(room=room, user=user).exists():
         return room
+    if room.mode == "solo":
+        raise ValidationError("Solo sessions are private.")
     if room.status != Room.Status.LOBBY:
-        raise ValidationError("This race has already started.")
+        raise ValidationError("This session has already started.")
     if room.participants.count() >= 4:
         raise ValidationError("Room is full (4 players maximum).")
     Participation.objects.create(room=room, user=user)
@@ -32,9 +34,9 @@ def join_room(code, user):
 def start_room(code, user):
     room = Room.objects.select_for_update().select_related("song").get(code=code)
     if room.host_id != user.id:
-        raise PermissionDenied("Only the host can start the race.")
+        raise PermissionDenied("Only the host can start the session.")
     if room.status != Room.Status.LOBBY:
-        raise ValidationError("Race has already started.")
+        raise ValidationError("Session has already started.")
     if not room.participants.exists() or room.participants.filter(ready=False).exists():
         raise ValidationError("Every player must be ready.")
     room.starts_at = timezone.now() + timedelta(seconds=3)
@@ -47,7 +49,7 @@ def start_room(code, user):
 def set_ready(code, user, ready):
     room = Room.objects.select_for_update().get(code=code)
     if room.status != Room.Status.LOBBY:
-        raise ValidationError("Ready state is locked during a race.")
+        raise ValidationError("Ready state is locked during a session.")
     p = Participation.objects.get(room=room, user=user)
     p.ready = ready
     p.save(update_fields=["ready"])
@@ -57,7 +59,7 @@ def set_ready(code, user, ready):
 def record_hit(code, user, note, lane):
     room = Room.objects.select_for_update().select_related("song").get(code=code)
     if room.status != Room.Status.RUNNING:
-        raise ValidationError("No race in progress.")
+        raise ValidationError("No session in progress.")
     p = Participation.objects.select_for_update().get(room=room, user=user)
     chart = room.song.chart
     if (
