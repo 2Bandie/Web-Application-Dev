@@ -1,14 +1,16 @@
 import { memo, useEffect, useRef, useState, type RefObject } from "react";
 import { soundtrack, unlockAudio } from "./audio";
 import type { Room } from "./types";
+import type { HitBurst } from "./useSession";
 const keys = ["d", "f", "j", "k"];
-const colors = ["#a6f5ba", "#9bcbff", "#d1b3ff", "#ffbd8a"];
+const colors = ["#58ffd4", "#54cfff", "#d791ff", "#ffb556"];
 type Props = {
   room: Room;
   offset: RefObject<number>;
   hitNotes: RefObject<Set<number>>;
   pendingNotes: RefObject<Set<number>>;
-  miss: () => void;
+  miss: (message?: string) => void;
+  burst: HitBurst | null;
   hit: (note: number, lane: number) => void;
   enabled: boolean;
   initialAudio: boolean;
@@ -19,6 +21,7 @@ export const Arena = memo(function Arena({
   hitNotes,
   pendingNotes,
   miss,
+  burst,
   hit,
   enabled,
   initialAudio,
@@ -87,6 +90,37 @@ export const Arena = memo(function Arena({
       window.removeEventListener("blur", blur);
     };
   }, [enabled, hit, hitNotes, pendingNotes, miss, offset]);
+  useEffect(() => {
+    if (!enabled) return;
+    const initial = roomRef.current;
+    const position = initial.starts_at
+      ? (initial.paused_at
+          ? Date.parse(initial.paused_at)
+          : Date.now() + offset.current) - Date.parse(initial.starts_at)
+      : -Infinity;
+    // Skip historical misses when reopening a level. Only newly expired notes
+    // trigger a burst, and pending inputs wait for their server judgement.
+    let cursor = initial.song.chart.findIndex(
+      (note) => note.time + 180 >= position,
+    );
+    if (cursor < 0) cursor = initial.song.chart.length;
+    const timer = setInterval(() => {
+      const current = roomRef.current;
+      if (current.status !== "running" || !current.starts_at) return;
+      const time = Date.now() + offset.current - Date.parse(current.starts_at);
+      let missed = false;
+      while (
+        cursor < current.song.chart.length &&
+        current.song.chart[cursor].time + 180 < time
+      ) {
+        if (!hitNotes.current.has(cursor) && !pendingNotes.current.has(cursor))
+          missed = true;
+        cursor++;
+      }
+      if (missed) miss("MISS · Note missed.");
+    }, 25);
+    return () => clearInterval(timer);
+  }, [enabled, room.code, hitNotes, pendingNotes, miss, offset]);
   useEffect(() => setAudio(initialAudio), [initialAudio]);
   useEffect(() => {
     if (!audio || room.status !== "running" || !room.starts_at) return;
@@ -137,10 +171,10 @@ export const Arena = memo(function Arena({
       }
       for (let lane = 0; lane < 4; lane++) {
         ctx.fillStyle = pressed.current.has(lane)
-          ? "#263a36"
+          ? "#423771"
           : lane % 2
-            ? "#181f28"
-            : "#151b23";
+            ? "#201a3b"
+            : "#171c39";
         ctx.fillRect(lane * laneWidth + 1, 0, laneWidth - 2, height);
         ctx.fillStyle = colors[lane];
         ctx.globalAlpha = 0.6;
@@ -159,7 +193,7 @@ export const Arena = memo(function Arena({
           const y = line - (note.time - time) * 0.22;
           if (y < -15 || y > height || hitNotes.current.has(index)) return;
           ctx.fillStyle =
-            note.time < time - 180 ? "#67434d" : colors[note.lane];
+            note.time < time - 180 ? "#ff668d" : colors[note.lane];
           ctx.beginPath();
           ctx.roundRect(
             note.lane * laneWidth + 12,
@@ -194,6 +228,20 @@ export const Arena = memo(function Arena({
         </button>
       </div>
       <div className="instrument-stage">
+        {burst && room.status === "running" && (
+          <span
+            key={burst.id}
+            data-burst-id={burst.id}
+            className={`hit-burst hit-burst--${burst.kind}`}
+            aria-hidden="true"
+          >
+            {burst.kind === "perfect"
+              ? "Perfect!"
+              : burst.kind === "good"
+                ? "Good!"
+                : "Miss"}
+          </span>
+        )}
         {room.status === "paused" && (
           <div className="pause-overlay" role="status">
             <strong>Paused</strong>

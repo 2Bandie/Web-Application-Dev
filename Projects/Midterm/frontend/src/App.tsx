@@ -248,18 +248,7 @@ function Dashboard() {
       </header>
       <main>
         <div className="page-heading">
-          <div>
-            <span className="eyebrow">MULTIPLAYER / FOUR-KEY RHYTHM</span>
-            <h1>
-              {tab === "records"
-                ? "The numbers behind the noise."
-                : "A little friendly competition."}
-            </h1>
-            <p>Lock in. Catch the beat. Make every note count.</p>
-          </div>
-          <span className="season-tag">
-            <span className="status-dot" /> ORIGINAL SYNTH TRACKS
-          </span>
+          <h1>Feel the Beat</h1>
         </div>
         {(error || session.error) && (
           <div className="error" role="alert">
@@ -520,6 +509,7 @@ function Dashboard() {
                       hitNotes={session.hitNotes}
                       pendingNotes={session.pendingNotes}
                       miss={session.miss}
+                      burst={session.burst}
                       hit={session.hit}
                       enabled={session.connection === "live"}
                     />
@@ -647,12 +637,6 @@ function Dashboard() {
             </section>
           </div>
         )}
-        <footer>
-          <span>MADE FOR THE MOMENT BETWEEN BEATS.</span>
-          <span>
-            Four tracks · Server-verified accuracy · Solo or multiplayer
-          </span>
-        </footer>
       </main>
     </div>
   );

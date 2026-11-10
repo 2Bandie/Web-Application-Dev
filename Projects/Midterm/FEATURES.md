@@ -55,3 +55,7 @@ See `README.md` for exact startup commands, API/socket formats, scoring math, an
 Solo mode now includes Pause, Resume, Start over, and Quit level. The server freezes elapsed time and shifts the start timestamp on resume; audio/notes follow that authoritative state. Restart creates a clean attempt on the same song, and abandoned attempts are excluded from completed records. Reloads preserve paused state. Multiplayer controls remain guarded.
 
 Mistimed input now produces structured MISS feedback instead of raw Django validation output. Dedicated backend and browser tests cover these transitions, incomplete-result exclusion, and delayed input delivery.
+
+## Visual polish update
+
+Vibrant cyan/purple styling, a simplified Feel the Beat heading, removed dashboard footer, larger Best Combo, and keyed Perfect!/Good!/Miss bursts with a quick bounce/fade. Expiring unplayed notes now trigger Miss feedback automatically, respecting pause and pending server judgements. Reduced-motion preferences use fade-only feedback. An additive migration renames the easy song to Glow while preserving existing chart and result relationships.

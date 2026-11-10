@@ -1,10 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PacketSchema, type Room } from "./types";
 import { refreshAccess } from "./api";
+export type HitBurst = { id: number; kind: "perfect" | "good" | "miss" };
 export function useSession(code: string | null, onRoom: (room: Room) => void) {
   const [connection, setConnection] = useState("offline");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+  const [burst, setBurst] = useState<HitBurst | null>(null);
+  const burstId = useRef(0);
+  const showFeedback = useCallback(
+    (kind: HitBurst["kind"], message: string) => {
+      setFeedback(message);
+      setBurst({ id: ++burstId.current, kind });
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!burst) return;
+    const timer = setTimeout(() => setBurst(null), 650);
+    return () => clearTimeout(timer);
+  }, [burst]);
   const socket = useRef<WebSocket | null>(null);
   const offset = useRef(0);
   const hitNotes = useRef(new Set<number>());
@@ -14,6 +29,7 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
   useEffect(() => {
     setError("");
     setFeedback("");
+    setBurst(null);
     hitNotes.current = new Set();
     pending.current = new Set();
     if (!code) {
@@ -72,7 +88,8 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
         } else if (p.type === "judgement") {
           hitNotes.current.add(p.note);
           pending.current.delete(p.note);
-          setFeedback(
+          showFeedback(
+            p.grade,
             `${p.grade.toUpperCase()} · ${p.delta_ms > 0 ? "+" : ""}${p.delta_ms} ms`,
           );
         } else if (p.type === "input_rejected") {
@@ -82,7 +99,7 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
             p.reason === "wrong_lane" ||
             p.reason === "out_of_order"
           ) {
-            setFeedback(`MISS · ${p.message}`);
+            showFeedback("miss", `MISS · ${p.message}`);
           }
         } else {
           setError(p.message);
@@ -123,7 +140,7 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
       socket.current?.close();
       socket.current = null;
     };
-  }, [code]);
+  }, [code, showFeedback]);
   const hit = useCallback((note: number, lane: number) => {
     if (
       socket.current?.readyState !== WebSocket.OPEN ||
@@ -135,13 +152,15 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
     socket.current.send(JSON.stringify({ type: "hit", note, lane }));
   }, []);
   const miss = useCallback(
-    () => setFeedback("MISS · No note at the hit line on this lane."),
-    [],
+    (message = "MISS · No note at the hit line on this lane.") =>
+      showFeedback("miss", message),
+    [showFeedback],
   );
   const dismissError = useCallback(() => setError(""), []);
   return {
     connection,
     feedback,
+    burst,
     error,
     offset,
     hitNotes,

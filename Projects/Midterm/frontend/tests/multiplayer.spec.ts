@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { RoomSchema } from "../src/types";
+import { RoomSchema, PacketSchema } from "../src/types";
 
 async function register(page: Page, username: string) {
   await page.goto("/");
@@ -273,6 +273,7 @@ test("late inputs show MISS feedback without a raw Django error banner", async (
     (response) =>
       response.url().endsWith("/api/rooms/solo/") && response.status() === 201,
   );
+  const socketPromise = page.waitForEvent("websocket");
   await page.getByRole("button", { name: /Play solo/ }).click();
   const room = RoomSchema.parse(await (await responsePromise).json());
   if (!room.starts_at) throw new Error("Missing start time");
@@ -283,9 +284,104 @@ test("late inputs show MISS feedback without a raw Django error banner", async (
       Date.parse(room.starts_at) + room.song.chart[0].time - Date.now() + 15,
     ),
   );
+  const socket = await socketPromise;
+  const rejection = socket.waitForEvent("framereceived", {
+    predicate: (event) => {
+      const packet = PacketSchema.safeParse(JSON.parse(String(event.payload)));
+      return packet.success && packet.data.type === "input_rejected";
+    },
+  });
   await page.keyboard.press("d");
-  await expect(page.locator(".feedback")).toContainText("MISS · Too late");
+  const packet = PacketSchema.parse(
+    JSON.parse(String((await rejection).payload)),
+  );
+  expect(packet.type).toBe("input_rejected");
+  if (packet.type !== "input_rejected")
+    throw new Error("Expected server input rejection");
+  expect(packet.reason).toBe("timing");
+  expect(packet.message).toContain("Too late");
+  await expect(page.locator(".feedback")).toContainText("MISS");
   await expect(page.locator(".error")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("ErrorDetail");
+  await page.getByRole("button", { name: "Quit level", exact: true }).click();
+});
+
+test("vibrant UI shows Glow, the simplified heading, larger combo and transient hit/miss bursts", async ({
+  page,
+}) => {
+  await register(page, `visual_${Date.now()}`);
+  await expect(
+    page.getByRole("heading", { name: "Feel the Beat", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("footer")).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText(
+    "MADE FOR THE MOMENT BETWEEN BEATS.",
+  );
+  await expect(page.locator("body")).not.toContainText(
+    "A little friendly competition.",
+  );
+  const glow = page.getByRole("button", { name: /Glow/ });
+  await expect(glow).toBeVisible();
+  await expect(page.getByRole("button", { name: /Afterglow/ })).toHaveCount(0);
+  await glow.click();
+  const response = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/rooms/solo/") && response.status() === 201,
+  );
+  await page.getByRole("button", { name: /Play solo/ }).click();
+  const room = RoomSchema.parse(await (await response).json());
+  if (!room.starts_at) throw new Error("No start time");
+  await expect(page.locator(".connected")).toBeVisible();
+  await page.waitForTimeout(
+    Math.max(
+      0,
+      Date.parse(room.starts_at) + room.song.chart[0].time - Date.now() + 15,
+    ),
+  );
+  await page.keyboard.press("d");
+  await expect(page.locator(".hit-burst--perfect")).toHaveText("Perfect!");
+  const firstId = await page
+    .locator(".hit-burst--perfect")
+    .getAttribute("data-burst-id");
+  expect(
+    await page
+      .locator(".hit-burst--perfect")
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("hit-bounce");
+  expect(
+    await page
+      .locator(".feedback strong")
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+  ).toBeGreaterThanOrEqual(25);
+  await expect(page.locator(`[data-burst-id="${firstId}"]`)).toHaveCount(0, {
+    timeout: 1500,
+  });
+  // Do not press the second note: a miss must appear without a keyboard event.
+  await expect(page.locator(".hit-burst--miss")).toHaveText("Miss");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await page
+      .locator(".hit-burst--miss")
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("hit-fade");
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.locator(".hit-burst")).toHaveCount(0);
+  await page.waitForTimeout(750);
+  await expect(page.locator(".hit-burst")).toHaveCount(0);
+  await page.screenshot({
+    path: test.info().outputPath("vibrant-paused.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.locator(".session-heading").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: test.info().outputPath("vibrant-mobile.png"),
+    fullPage: true,
+  });
   await page.getByRole("button", { name: "Quit level", exact: true }).click();
 });

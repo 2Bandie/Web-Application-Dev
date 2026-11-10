@@ -44,7 +44,7 @@ Open this folder in VS Code, stop the Live Server extension if it is running, an
 
 | Track | Difficulty | BPM | Approximate length | Notes | Sound |
 | --- | --- | --- | --- | --- | --- |
-| Afterglow | Easy | 100 | 22 seconds | 32 | Gentle synth melody |
+| Glow | Easy | 100 | 22 seconds | 32 | Gentle synth melody |
 | Neon Circuit | Normal | 140 | 16 seconds | 32 | Faster synth melody |
 | Midnight Drive | Hard | 128 | 48 seconds | 120 | Four-on-the-floor kick, snare/clap, hats, bass, chords |
 | Overdrive | Expert | 176 | 58 seconds | 308 | Breakbeat drums, bass, fast alternating eighth-note streams |
@@ -200,3 +200,7 @@ For two computers on a trusted LAN, bind Vite to the LAN interface (`npm run dev
 ## Git workflow
 
 Review changes and make meaningful commits as you understand and extend each feature, preserving an honest history. `FEATURES.md` supplies a demonstration checklist; commit it with the implementation rather than presenting fabricated past progress. Dependencies, database files, build output, virtual environments, and test reports are ignored; lockfiles and migrations are included.
+
+### Visual feedback
+
+The dashboard uses a vibrant cyan/purple stage palette and the heading **Feel the Beat**, with no bottom footer. **Best Combo** is enlarged below the lanes. Perfect hits show a bouncing **Perfect!** burst, good hits show **Good!**, and unplayed or mistimed notes show **Miss**. Each burst fades out after 650ms; reduced-motion settings use a simple fade instead of a bounce. Glow is the renamed original easy song, with the same chart ID and historical results preserved by migration.
