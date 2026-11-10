@@ -58,4 +58,4 @@ Mistimed input now produces structured MISS feedback instead of raw Django valid
 
 ## Visual polish update
 
-Bright mint, coral, and warm-yellow styling, a simplified Feel the Beat heading, removed dashboard footer, larger Best Combo, and keyed Perfect!/Good!/Miss bursts with a quick bounce/fade. Expiring unplayed notes now trigger Miss feedback automatically, respecting pause and pending server judgements. Reduced-motion preferences use fade-only feedback. An additive migration renames the easy song to Glow while preserving existing chart and result relationships.
+Dark charcoal-and-teal styling with mint and warm accents and a locally bundled rounded Nunito font, a simplified Feel the Beat heading, removed dashboard footer, larger Best Combo, and keyed Perfect!/Good!/Miss bursts with a quick bounce/fade. Expiring unplayed notes now trigger Miss feedback automatically, respecting pause and pending server judgements. Reduced-motion preferences use fade-only feedback. An additive migration renames the easy song to Glow while preserving existing chart and result relationships.

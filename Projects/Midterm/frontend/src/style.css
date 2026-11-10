@@ -1,6 +1,7 @@
 :root {
   font-family:
-    Inter,
+    "Nunito Variable",
+    "Arial Rounded MT Bold",
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -853,27 +854,27 @@ th:last-child {
   flex-wrap: wrap;
 }
 
-/* Bright mint, coral, and sunshine accents with a darker green play surface. */
+/* Dark charcoal and teal, with mint and warm accents and just a trace of violet. */
 :root {
-  --green: #12664d;
-  --muted: #536a5d;
-  --border: #b6d4bf;
-  color: #203d30;
-  background: #f4fff3;
-  color-scheme: light;
+  --green: #86ffd7;
+  --muted: #b0c6c1;
+  --border: #3c5a5b;
+  color: #edf8f2;
+  background: #111c23;
+  color-scheme: dark;
 }
 body {
   background:
-    radial-gradient(ellipse at 5% 5%, #ffdcc3aa, transparent 50%),
-    radial-gradient(ellipse at 95% 25%, #b5f6cfaa, transparent 50%), #f4fff3;
+    radial-gradient(ellipse at 5% 5%, #47304e22, transparent 50%),
+    radial-gradient(ellipse at 95% 25%, #11655266, transparent 50%), #111c23;
   min-height: 100vh;
 }
 header {
-  background: linear-gradient(110deg, #fff3cfed, #cbf9deed);
-  border-bottom-color: #b4d7bd;
+  background: linear-gradient(110deg, #202d34ed, #183b36ed);
+  border-bottom-color: #3a5c59;
 }
 .brand-mark {
-  color: #13805d;
+  color: #88ffdc;
   text-shadow: 0 0 22px #70eeb555;
 }
 main {
@@ -883,110 +884,110 @@ main {
   font-size: clamp(42px, 5vw, 64px);
   font-weight: 780;
   letter-spacing: -2px;
-  background: linear-gradient(100deg, #137a54 0%, #a44f25 70%, #b94246 100%);
+  background: linear-gradient(100deg, #8bffe0 0%, #9ddfcf 70%, #ffc5aa 100%);
   color: transparent;
   background-clip: text;
   -webkit-background-clip: text;
   padding-bottom: 5px;
 }
 .panel {
-  background: linear-gradient(135deg, #fffdf1, #edfff2);
-  border-color: #bdd9bd;
-  box-shadow: 0 12px 40px #3c6a3620;
+  background: linear-gradient(135deg, #243039, #193932);
+  border-color: #426260;
+  box-shadow: 0 12px 40px #030f1544;
 }
 .panel .eyebrow {
-  color: #5a7150;
+  color: #afd3c2;
 }
 .panel-title {
   font-size: 19px;
   font-weight: 750;
   letter-spacing: 1.2px;
-  color: #245740;
+  color: #e2fff2;
 }
 .track {
-  background: #fffdf3;
-  border-color: #c6d8b9;
-  color: #244330;
+  background: #1a292e;
+  border-color: #42605a;
+  color: #e4f8ef;
 }
 .track.selected {
-  background: linear-gradient(125deg, #d8ffd8, #c9f5df);
-  border-color: #1c8d5d;
+  background: linear-gradient(125deg, #284b43, #215446);
+  border-color: #89ffd7;
   box-shadow: 0 0 18px #4bc48320;
 }
 .track-art {
-  background: #baf6d4;
-  color: #106b48;
+  background: #225f4d;
+  color: #9dffce;
 }
 .track:nth-child(2) .track-art {
-  background: #ffe1b3;
-  color: #9a4c13;
+  background: #62412c;
+  color: #ffd29d;
 }
 .track:nth-child(3) .track-art {
-  background: #fff0a2;
-  color: #7b5d06;
+  background: #5c5227;
+  color: #ffe58b;
 }
 .track:nth-child(4) .track-art {
-  background: #ffd0c6;
-  color: #a53e43;
+  background: #633a40;
+  color: #ffb6c3;
 }
 button:not(.secondary):not(.text-button):not(.track) {
-  background: #ffcf65;
-  color: #3e350f;
-  box-shadow: 0 3px 16px #ffc24725;
+  background: #86ffd7;
+  color: #10382a;
+  box-shadow: 0 3px 16px #54ffbd20;
 }
 nav button {
   background: transparent !important;
-  color: #496950 !important;
+  color: #b4c9c5 !important;
   box-shadow: none !important;
 }
 nav .nav-active {
-  color: #176d4b !important;
+  color: #8cffe0 !important;
 }
 .secondary {
-  border-color: #7fae8e;
-  color: #28513b;
-  background: #e6f8e9;
+  border-color: #6b9485;
+  color: #d6f6e6;
+  background: #2d4b4233;
 }
 .text-button {
-  color: #38654e;
+  color: #c0dfd0;
 }
 input {
-  background: #fffef8;
-  border-color: #9ebfa5;
-  color: #203d30;
+  background: #14282a;
+  border-color: #4d7169;
+  color: #edf8f2;
 }
 label {
-  color: #365843;
+  color: #d1e8dd;
 }
 .avatar {
-  background: #d0f5d9;
-  border-color: #78ab84;
-  color: #23613d;
+  background: #2a4e43;
+  border-color: #609d80;
+  color: #c4ffe3;
 }
 .brand-sub {
-  border-color: #9dc7a9;
+  border-color: #537369;
 }
 .empty-arena {
-  border-color: #94bf94;
-  background: linear-gradient(115deg, #fff0c4, #d9f9db);
-  color: #446c48;
+  border-color: #5b8874;
+  background: linear-gradient(115deg, #35462f, #1d4739);
+  color: #d0e8d6;
 }
 .instrument {
-  background: #123b2d;
+  background: #13272a;
   color: #f2fff2;
-  border-color: #57946d;
-  box-shadow: 0 0 28px #4a9c6125;
+  border-color: #537e74;
+  box-shadow: 0 0 28px #64ddb225;
 }
 .instrument-top {
-  background: linear-gradient(100deg, #1b5d40, #2e5642);
+  background: linear-gradient(100deg, #29493e, #27424b);
 }
 .instrument-top .eyebrow,
 .instrument-top .text-button {
-  color: #d5ffbc;
+  color: #c4ffe5;
 }
 .instrument .hint {
-  background: #163e2e;
-  color: #d3e8c9;
+  background: #1b3531;
+  color: #d3e8db;
 }
 .feedback {
   align-items: center;
@@ -996,51 +997,51 @@ label {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #446645;
+  color: #bddccf;
   font-size: clamp(11px, 1.3vw, 14px);
 }
 .feedback strong {
   font-size: clamp(25px, 3vw, 34px);
-  color: #166443;
+  color: #98ffda;
   text-shadow: 0 0 16px #4bc48325;
   margin-left: 2px;
 }
 .accuracy-meter {
-  background: #d4e8cb;
+  background: #355046;
 }
 .accuracy-meter span {
-  background: linear-gradient(90deg, #ffc24d, #40bb81);
+  background: linear-gradient(90deg, #e9c876, #71e9b6);
 }
 .pause-overlay {
-  background: #103627ed;
+  background: #112c29ed;
 }
 .pause-overlay strong {
-  color: #a4ffba;
+  color: #a4ffd9;
 }
 .tag {
-  color: #25633e;
-  border-color: #8bbb8e;
+  color: #bdf6dc;
+  border-color: #62927b;
 }
 .room-code strong {
-  color: #2a5536;
+  color: #e5fff0;
 }
 .hint {
-  color: #526a58;
+  color: #acc6b7;
 }
 kbd {
-  background: #d8f4d8;
-  color: #245f3d;
-  border-color: #83b78b;
+  background: #2b4b40;
+  color: #c8ffe4;
+  border-color: #6b9c83;
 }
 .auth-shell {
   background:
-    radial-gradient(ellipse at 15% 15%, #ffddaa99, transparent 55%),
-    radial-gradient(ellipse at 90% 70%, #a7edba99, transparent 55%), #f5fff1;
+    radial-gradient(ellipse at 15% 15%, #35422d44, transparent 55%),
+    radial-gradient(ellipse at 90% 70%, #1c685b55, transparent 55%), #111c23;
 }
 .auth-card {
-  background: linear-gradient(145deg, #fff9e5, #edfff0);
-  border-color: #afcc9f;
-  box-shadow: 0 18px 60px #42643f20;
+  background: linear-gradient(145deg, #263338, #1c3931);
+  border-color: #4a7463;
+  box-shadow: 0 18px 60px #020d1655;
 }
 .auth-card .auth-brand {
   font-size: 48px;
@@ -1055,7 +1056,7 @@ kbd {
   font-size: 24px;
   line-height: 1.3;
   font-weight: 600;
-  color: #536a3d;
+  color: #b4e9ce;
   margin-top: 14px;
   letter-spacing: -0.5px;
 }
@@ -1071,21 +1072,21 @@ kbd {
   letter-spacing: -1px;
   color: #85ffe1;
   text-shadow:
-    0 3px 0 #202041,
+    0 3px 0 #122d29,
     0 0 28px #66ffcd88;
   white-space: nowrap;
   animation: hit-bounce 650ms both;
 }
 .hit-burst--good {
-  color: #a8d6ff;
+  color: #ffe4a8;
   text-shadow:
-    0 3px 0 #202041,
-    0 0 28px #8cbaff88;
+    0 3px 0 #122d29,
+    0 0 28px #ffc97e77;
 }
 .hit-burst--miss {
   color: #ff8cb6;
   text-shadow:
-    0 3px 0 #202041,
+    0 3px 0 #122d29,
     0 0 28px #ff699288;
 }
 @keyframes hit-bounce {
@@ -1135,4 +1136,30 @@ kbd {
     opacity: 1;
     transform: translate(-50%, -50%);
   }
+}
+
+h1,
+h2,
+h3,
+.brand,
+button,
+.hit-burst {
+  font-family:
+    "Nunito Variable", "Arial Rounded MT Bold", system-ui, sans-serif;
+  font-weight: 850;
+}
+.page-heading h1 {
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+.auth-card .auth-brand {
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+.panel-title {
+  font-weight: 850;
+  letter-spacing: 0.8px;
+}
+button {
+  border-radius: 12px;
 }
