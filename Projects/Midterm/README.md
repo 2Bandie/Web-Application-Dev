@@ -40,7 +40,7 @@ Open this folder in VS Code, stop the Live Server extension if it is running, an
 3. For multiplayer, click **Create multiplayer room**, share its code, and have friends join with their own accounts. Each clicks **Ready up**, then the host clicks **Start song**. All players finish together; standings compare weighted accuracy, not completion speed.
 4. Press **D / F / J / K** when matching notes reach the hit line. Hold-to-repeat does not count. A hardware keyboard is required. Use the audio button to mute/unmute.
 5. Watch percentage meters and timing feedback. At the end, inspect **Your records** for history and best accuracy per player and song. Longer songs do not win simply by offering more points.
-6. After a reload, use **Return to a room** to resume. Missed notes stay missed and disconnecting does not pause the song. **Play again** preserves solo/multiplayer mode with the currently selected track.
+6. There is no saved-session picker. Keep the level open to use solo Pause/Resume. Multiplayer participants can rejoin using the shared code after a reload. Missed notes stay missed. **Play again** preserves solo/multiplayer mode with the currently selected track.
 
 | Track | Difficulty | BPM | Approximate length | Notes | Sound |
 | --- | --- | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ Both new charts use rounded musical-grid timestamps instead of accumulating mill
 
 While playing solo, use **Pause**, **Resume**, **Start over**, or **Quit level** above the note lanes.
 
-- **Pause** freezes the server clock, notes, audio, accuracy, and initial countdown if it is still running. A paused session survives a reload; reopen it from Resume a session.
+- **Pause** freezes the server clock, notes, audio, accuracy, and initial countdown if it is still running. Keep the current level open to use Resume; the saved-session picker has been removed.
 - **Resume** continues immediately from the saved song position. Time spent paused does not turn notes into misses.
 - **Start over** restarts the same selected level with a new countdown, empty hit history, and zero score/combo. A fresh session code isolates late packets from the previous attempt.
 - **Quit level** stops playback and returns to song selection. Incomplete attempts are abandoned and do not appear in completed history or leaderboards. Completed results remain saved when replaying.
@@ -177,7 +177,7 @@ npm run test:e2e
 CHROMIUM_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-The multiplayer browser test uses two isolated accounts, starts a real session, plays a note in both browsers, asserts remote score broadcasts, reloads a player, waits for completion, and checks persisted history and leaderboard entries. A second browser test selects Overdrive, starts solo without a lobby, plays a note, checks percussion source creation and mute cleanup, and checks the page has no speed-competition wording. Additional browser tests cover pause/resume, frozen canvas and accuracy, paused reload recovery, restart/quit, and delayed network inputs producing MISS feedback without an error banner. These tests create uniquely named test accounts and results in the development database. Do not point it at production data.
+The multiplayer browser test uses two isolated accounts, starts a real session, plays a note in both browsers, asserts remote score broadcasts, reloads a player, waits for completion, and checks persisted history and leaderboard entries. A second browser test selects Overdrive, starts solo without a lobby, plays a note, checks percussion source creation and mute cleanup, and checks the page has no speed-competition wording. Additional browser tests cover pause/resume, frozen canvas and accuracy, in-level paused controls, restart/quit, and delayed network inputs producing MISS feedback without an error banner. These tests create uniquely named test accounts and results in the development database. Do not point it at production data.
 
 Optional Python formatting:
 
@@ -208,3 +208,5 @@ The dashboard uses a dark charcoal-and-teal palette with mint and warm accents a
 The login card now places the Pulse logo above a larger “Find your frequency” tagline. Dashboard panels use the concise PICK YOUR TRACK and PLAY WITH OTHERS headings. The previous marketing copy and extra live-accuracy explanation have been removed.
 
 The rounded Nunito Variable font is bundled locally with the frontend, so it does not require a Google Fonts connection. Run `npm.cmd ci` (or `npm ci`) after updating to install the font package.
+
+The interface uses solid dark teal/charcoal surfaces without gradients or decorative glows. Supporting labels, stats, hints, room codes, and lane keys use the rounded Nunito family as well. The dashboard no longer fetches or displays a saved-session list; in-level solo Pause/Resume remains available.

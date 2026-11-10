@@ -5,7 +5,6 @@ import {
   HistorySchema,
   LeaderboardSchema,
   PageOfSongs,
-  PageOfRooms,
   RoomSchema,
   type Room,
   type Song,
@@ -113,7 +112,6 @@ function Dashboard() {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [board, setBoard] = useState<z.infer<typeof LeaderboardSchema>>([]);
   const [history, setHistory] = useState<z.infer<typeof HistorySchema>>([]);
-  const [recent, setRecent] = useState<Room[]>([]);
   const [tab, setTab] = useState<"arena" | "records">("arena");
   const acceptRoom = useCallback(
     (r: Room) => setRoom((current) => (current?.code === r.code ? r : current)),
@@ -121,14 +119,12 @@ function Dashboard() {
   );
   const session = useSession(room?.code ?? null, acceptRoom);
   const loadRecords = useCallback(async () => {
-    const [b, h, r] = await Promise.all([
+    const [b, h] = await Promise.all([
       api("leaderboard/", LeaderboardSchema),
       api("history/", HistorySchema),
-      api("rooms/", PageOfRooms),
     ]);
     setBoard(b);
     setHistory(h);
-    setRecent(r.results);
   }, []);
   useEffect(() => {
     void api("songs/", PageOfSongs)
@@ -538,34 +534,6 @@ function Dashboard() {
                   <kbd>K</kbd>
                 </div>
               </div>
-            )}
-            {recent.length > 0 && (
-              <section className="recent">
-                <h3>Resume a session</h3>
-                <div className="recent-list">
-                  {recent
-                    .filter((r) => r.status !== "abandoned")
-                    .slice(0, 6)
-                    .map((r) => (
-                      <button
-                        className="secondary"
-                        key={r.code}
-                        disabled={
-                          busy ||
-                          room?.status === "running" ||
-                          room?.status === "paused"
-                        }
-                        onClick={() =>
-                          void task(async () =>
-                            setRoom(await api(`rooms/${r.code}/`, RoomSchema)),
-                          )
-                        }
-                      >
-                        {r.code} · {r.song.title} · {r.status}
-                      </button>
-                    ))}
-                </div>
-              </section>
             )}
           </>
         ) : (

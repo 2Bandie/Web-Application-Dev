@@ -90,4 +90,3 @@ export const PacketSchema = z.discriminatedUnion("type", [
 ]);
 export type Packet = z.infer<typeof PacketSchema>;
 export const PageOfSongs = z.object({ results: z.array(SongSchema) });
-export const PageOfRooms = z.object({ results: z.array(RoomSchema) });

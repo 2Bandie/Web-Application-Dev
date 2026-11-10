@@ -207,9 +207,9 @@ main {
 }
 .eyebrow {
   font:
-    10px ui-monospace,
-    SFMono-Regular,
-    monospace;
+    700 11px "Nunito Variable",
+    system-ui,
+    sans-serif;
   letter-spacing: 1.7px;
   color: var(--green);
   display: block;
@@ -220,7 +220,10 @@ main {
   margin-top: 12px;
 }
 .season-tag {
-  font: 10px monospace;
+  font:
+    700 10px "Nunito Variable",
+    system-ui,
+    sans-serif;
   letter-spacing: 1px;
   white-space: nowrap;
   border: 1px solid var(--border);
@@ -325,7 +328,7 @@ main {
 }
 .join-row input {
   letter-spacing: 2px;
-  font-family: monospace;
+  font-family: "Nunito Variable", system-ui, sans-serif;
   min-width: 0;
 }
 .secondary {
@@ -355,7 +358,10 @@ main {
   margin-bottom: 6px;
 }
 .tag {
-  font: 9px monospace;
+  font:
+    700 9px "Nunito Variable",
+    system-ui,
+    sans-serif;
   letter-spacing: 1px;
   padding: 5px 7px;
   border: 1px solid #425148;
@@ -368,7 +374,10 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 11px monospace;
+  font:
+    700 11px "Nunito Variable",
+    system-ui,
+    sans-serif;
   color: var(--muted);
 }
 .room-code strong {
@@ -432,7 +441,10 @@ main {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font: 9px monospace;
+  font:
+    700 9px "Nunito Variable",
+    system-ui,
+    sans-serif;
   letter-spacing: 1px;
   padding: 15px 1px;
   color: var(--green);
@@ -471,7 +483,10 @@ main {
   font-size: 13px;
 }
 .rank {
-  font: 12px monospace;
+  font:
+    700 12px "Nunito Variable",
+    system-ui,
+    sans-serif;
   color: var(--muted);
 }
 .player-row small {
@@ -480,7 +495,10 @@ main {
 }
 .score {
   margin-left: auto;
-  font: 16px monospace;
+  font:
+    700 16px "Nunito Variable",
+    system-ui,
+    sans-serif;
 }
 .standings > .hint {
   margin-top: 15px;
@@ -510,7 +528,10 @@ main {
   margin-left: auto;
 }
 kbd {
-  font: 12px monospace;
+  font:
+    700 12px "Nunito Variable",
+    system-ui,
+    sans-serif;
   border: 1px solid #49584d;
   border-bottom-width: 3px;
   border-radius: 5px;
@@ -521,23 +542,6 @@ kbd {
 .instrument kbd {
   padding: 1px 5px;
   border-bottom-width: 2px;
-}
-.recent {
-  margin-top: 26px;
-}
-.recent h3 {
-  color: #9eada5;
-  font-size: 12px;
-  margin-bottom: 12px;
-}
-.recent-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.recent-list button {
-  font-size: 10px;
-  padding: 8px 12px;
 }
 .records-grid {
   display: grid;
@@ -604,7 +608,7 @@ th:last-child {
   align-items: center;
   justify-content: center;
   padding: 35px 20px;
-  background: radial-gradient(ellipse at 50% 20%, #22312d 0%, #11151c 65%);
+  background: #152326;
 }
 .auth-shell > .brand {
   margin-bottom: 35px;
@@ -645,7 +649,10 @@ th:last-child {
   margin-top: 16px;
 }
 .auth-footer {
-  font: 9px monospace;
+  font:
+    700 9px "Nunito Variable",
+    system-ui,
+    sans-serif;
   letter-spacing: 1.5px;
   margin-top: 26px;
   color: #8e9a93;
@@ -789,7 +796,10 @@ th:last-child {
 .accuracy-value {
   margin-left: auto;
   color: var(--green);
-  font: 20px monospace;
+  font:
+    700 20px "Nunito Variable",
+    system-ui,
+    sans-serif;
 }
 .accuracy-meter {
   height: 9px;
@@ -864,18 +874,16 @@ th:last-child {
   color-scheme: dark;
 }
 body {
-  background:
-    radial-gradient(ellipse at 5% 5%, #47304e22, transparent 50%),
-    radial-gradient(ellipse at 95% 25%, #11655266, transparent 50%), #111c23;
+  background: #111c23;
   min-height: 100vh;
 }
 header {
-  background: linear-gradient(110deg, #202d34ed, #183b36ed);
+  background: #202f33;
   border-bottom-color: #3a5c59;
 }
 .brand-mark {
   color: #88ffdc;
-  text-shadow: 0 0 22px #70eeb555;
+  text-shadow: none;
 }
 main {
   padding-bottom: 44px;
@@ -884,16 +892,14 @@ main {
   font-size: clamp(42px, 5vw, 64px);
   font-weight: 780;
   letter-spacing: -2px;
-  background: linear-gradient(100deg, #8bffe0 0%, #9ddfcf 70%, #ffc5aa 100%);
-  color: transparent;
-  background-clip: text;
-  -webkit-background-clip: text;
+  background: none;
+  color: #a0f6d8;
   padding-bottom: 5px;
 }
 .panel {
-  background: linear-gradient(135deg, #243039, #193932);
+  background: #233438;
   border-color: #426260;
-  box-shadow: 0 12px 40px #030f1544;
+  box-shadow: none;
 }
 .panel .eyebrow {
   color: #afd3c2;
@@ -910,9 +916,9 @@ main {
   color: #e4f8ef;
 }
 .track.selected {
-  background: linear-gradient(125deg, #284b43, #215446);
+  background: #2b4c43;
   border-color: #89ffd7;
-  box-shadow: 0 0 18px #4bc48320;
+  box-shadow: none;
 }
 .track-art {
   background: #225f4d;
@@ -933,12 +939,12 @@ main {
 button:not(.secondary):not(.text-button):not(.track) {
   background: #86ffd7;
   color: #10382a;
-  box-shadow: 0 3px 16px #54ffbd20;
+  box-shadow: none;
 }
 nav button {
   background: transparent !important;
   color: #b4c9c5 !important;
-  box-shadow: none !important;
+  box-shadow: none;
 }
 nav .nav-active {
   color: #8cffe0 !important;
@@ -969,17 +975,17 @@ label {
 }
 .empty-arena {
   border-color: #5b8874;
-  background: linear-gradient(115deg, #35462f, #1d4739);
+  background: #263c35;
   color: #d0e8d6;
 }
 .instrument {
   background: #13272a;
   color: #f2fff2;
   border-color: #537e74;
-  box-shadow: 0 0 28px #64ddb225;
+  box-shadow: none;
 }
 .instrument-top {
-  background: linear-gradient(100deg, #29493e, #27424b);
+  background: #29453e;
 }
 .instrument-top .eyebrow,
 .instrument-top .text-button {
@@ -1003,14 +1009,14 @@ label {
 .feedback strong {
   font-size: clamp(25px, 3vw, 34px);
   color: #98ffda;
-  text-shadow: 0 0 16px #4bc48325;
+  text-shadow: none;
   margin-left: 2px;
 }
 .accuracy-meter {
   background: #355046;
 }
 .accuracy-meter span {
-  background: linear-gradient(90deg, #e9c876, #71e9b6);
+  background: #79dfb1;
 }
 .pause-overlay {
   background: #112c29ed;
@@ -1034,14 +1040,12 @@ kbd {
   border-color: #6b9c83;
 }
 .auth-shell {
-  background:
-    radial-gradient(ellipse at 15% 15%, #35422d44, transparent 55%),
-    radial-gradient(ellipse at 90% 70%, #1c685b55, transparent 55%), #111c23;
+  background: #152326;
 }
 .auth-card {
-  background: linear-gradient(145deg, #263338, #1c3931);
+  background: #243735;
   border-color: #4a7463;
-  box-shadow: 0 18px 60px #020d1655;
+  box-shadow: none;
 }
 .auth-card .auth-brand {
   font-size: 48px;
@@ -1071,23 +1075,17 @@ kbd {
   font-weight: 900;
   letter-spacing: -1px;
   color: #85ffe1;
-  text-shadow:
-    0 3px 0 #122d29,
-    0 0 28px #66ffcd88;
+  text-shadow: none;
   white-space: nowrap;
   animation: hit-bounce 650ms both;
 }
 .hit-burst--good {
   color: #ffe4a8;
-  text-shadow:
-    0 3px 0 #122d29,
-    0 0 28px #ffc97e77;
+  text-shadow: none;
 }
 .hit-burst--miss {
   color: #ff8cb6;
-  text-shadow:
-    0 3px 0 #122d29,
-    0 0 28px #ff699288;
+  text-shadow: none;
 }
 @keyframes hit-bounce {
   0% {
@@ -1162,4 +1160,35 @@ button,
 }
 button {
   border-radius: 12px;
+}
+
+/* Rounded supporting text and solid surfaces keep the playful theme consistent. */
+.eyebrow,
+.tag,
+.room-code,
+.feedback,
+.rank,
+kbd {
+  letter-spacing: 0.4px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+}
+.tag,
+.connection {
+  font-size: 11px;
+  font-weight: 750;
+}
+.hint,
+small {
+  font-weight: 600;
+}
+.score,
+.accuracy-value,
+.feedback strong {
+  font-variant-numeric: tabular-nums;
+}
+button:hover:not(:disabled) {
+  filter: none;
 }

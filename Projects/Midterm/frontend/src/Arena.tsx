@@ -180,7 +180,7 @@ export const Arena = memo(function Arena({
         ctx.globalAlpha = 0.6;
         ctx.fillRect(lane * laneWidth + 8, line, laneWidth - 16, 3);
         ctx.globalAlpha = 1;
-        ctx.font = "bold 20px monospace";
+        ctx.font = '850 20px "Nunito Variable", sans-serif';
         ctx.textAlign = "center";
         ctx.fillText(keys[lane].toUpperCase(), laneWidth * (lane + 0.5), 405);
       }

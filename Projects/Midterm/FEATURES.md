@@ -17,7 +17,7 @@ The original typing competition becomes an accuracy-based rhythm game: character
 | 11 | Live competitor accuracy meters | `frontend/src/Standings.tsx` | Percentages compare timing accuracy; everyone finishes together | Presentational component, accessible meters, accuracy-based ordering |
 | 12 | Original synthesized audio and track difficulty | `frontend/src/audio.ts`, `Arena.tsx` | Enable audio; compare original melodies with house/breakbeat drums, bass, and 176 BPM expert streams | Web Audio scheduling, no external music service |
 | 13 | Personal history and global per-song accuracy leaderboard | `backend/arena/views.py`, `frontend/src/App.tsx` | Finish a session and open Your records | Aggregate queries, related-model loading, typed API client |
-| 14 | Reconnection and reload recovery | `frontend/src/useSession.ts`, `App.tsx` | Reload, return to room; accepted notes/scores remain | Backoff, JWT refresh, authoritative recovery snapshots |
+| 14 | Live reconnection and state recovery | `frontend/src/useSession.ts`, `App.tsx` | Automatic socket reconnect; multiplayer users can rejoin by code | Backoff, JWT refresh, authoritative recovery snapshots |
 | 15 | Accessible interface and resilient errors | `frontend/src/ErrorBoundary.tsx`, `api.ts`, `style.css`, `backend/arena/exceptions.py` | Invalid room code, unauthorized action, or stopped API shows an error; keyboard focus remains visible | Error boundary, role alerts, form validation, responsive layout, transaction error handling |
 
 ## Rubric crosswalk
@@ -36,7 +36,7 @@ The original typing competition becomes an accuracy-based rhythm game: character
 3. Open two browser profiles with different accounts.
 4. Create/join a room, ready up, start, and play several notes.
 5. Point out live competitor accuracy meters and timing feedback.
-6. Reload a player and resume through Return to a room.
+6. Demonstrate automatic connection recovery; multiplayer players can rejoin using the shared code after a reload.
 7. Finish, then show personal history and the global board.
 8. Explain the single-worker/SQLite development limit and server-receive-time latency tradeoff.
 
@@ -52,7 +52,7 @@ See `README.md` for exact startup commands, API/socket formats, scoring math, an
 
 ## Solo playback and feedback update
 
-Solo mode now includes Pause, Resume, Start over, and Quit level. The server freezes elapsed time and shifts the start timestamp on resume; audio/notes follow that authoritative state. Restart creates a clean attempt on the same song, and abandoned attempts are excluded from completed records. Reloads preserve paused state. Multiplayer controls remain guarded.
+Solo mode now includes Pause, Resume, Start over, and Quit level. The server freezes elapsed time and shifts the start timestamp on resume; audio/notes follow that authoritative state. Restart creates a clean attempt on the same song, and abandoned attempts are excluded from completed records. In-level paused state is preserved during socket reconnects; the saved-session picker has been removed. Multiplayer controls remain guarded.
 
 Mistimed input now produces structured MISS feedback instead of raw Django validation output. Dedicated backend and browser tests cover these transitions, incomplete-result exclusion, and delayed input delivery.
 

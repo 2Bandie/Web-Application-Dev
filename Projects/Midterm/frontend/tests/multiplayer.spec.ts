@@ -74,10 +74,11 @@ test("two players compare accuracy, broadcast scores, recover after reload, and 
         .locator(".score"),
     ).toHaveText("1,000");
     await p2.reload();
-    await p2
-      .locator(".recent-list")
-      .getByRole("button", { name: new RegExp(code) })
-      .click();
+    await expect(
+      p2.getByRole("heading", { name: "Resume a session", exact: true }),
+    ).toHaveCount(0);
+    await p2.getByLabel("Room code").fill(code);
+    await p2.getByRole("button", { name: "Join room", exact: true }).click();
     await expect(p2.locator(".connected")).toBeVisible();
     await expect(
       p2
@@ -223,12 +224,9 @@ test("solo can pause, resume, start over and quit without saving an incomplete r
     Date.parse(resumed.starts_at!) - Date.parse(initial.starts_at),
   ).toBeGreaterThan(1000);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
-  // Reload preserves the server pause state and the accepted note.
-  await page.reload();
-  await page
-    .locator(".recent-list")
-    .getByRole("button", { name: new RegExp(initial.code) })
-    .click();
+  await expect(
+    page.getByRole("heading", { name: "Resume a session", exact: true }),
+  ).toHaveCount(0);
   await expect(page.locator(".pause-overlay")).toBeVisible();
   await expect(page.locator(".score")).toHaveText("1,000");
   const restartResponse = page.waitForResponse(
