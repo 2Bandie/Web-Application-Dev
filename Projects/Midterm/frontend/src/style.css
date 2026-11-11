@@ -405,6 +405,9 @@ kbd {
 .feedback strong {
   font-variant-numeric: tabular-nums;
 }
+.records-grid .eyebrow {
+  color: var(--yellow);
+}
 table {
   width: 100%;
   border-collapse: collapse;

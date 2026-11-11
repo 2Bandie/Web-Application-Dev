@@ -524,8 +524,7 @@ function Dashboard() {
               <span className="eyebrow">GLOBAL / ALL TIME</span>
               <h2>The accuracy leaderboard.</h2>
               <p className="hint">
-                Best completed accuracy per player and song. Compare
-                performances on the same track.
+                Best completed accuracy per player and song.
               </p>
               <table>
                 <thead>
