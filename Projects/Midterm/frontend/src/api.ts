@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { apiUrl } from "./backend";
 import { TokensSchema } from "./types";
 export class ApiError extends Error {
   constructor(
@@ -31,7 +32,7 @@ export async function refreshAccess(): Promise<string> {
   refreshing = (async () => {
     const refresh = sessionStorage.getItem("pulse.refresh");
     if (!refresh) throw new ApiError(401, "Please sign in again.");
-    const response = await fetch("/api/token/refresh/", {
+    const response = await fetch(apiUrl("token/refresh/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh }),
@@ -63,7 +64,7 @@ export async function api<T>(
   let response: Response;
   try {
     const access = sessionStorage.getItem("pulse.access");
-    response = await fetch(`/api/${path}`, {
+    response = await fetch(apiUrl(path), {
       method: body === undefined ? "GET" : "POST",
       headers: {
         "Content-Type": "application/json",

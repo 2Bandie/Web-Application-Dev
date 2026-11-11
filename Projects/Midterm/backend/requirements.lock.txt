@@ -8,8 +8,9 @@ channels==4.3.2
 constantly==23.10.4
 cryptography==50.0.2
 daphne==4.2.3
-Django==5.2.19
+dj-database-url==3.1.2
 django-cors-headers==4.9.0
+Django==5.2.19
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 hyperlink==21.0.0
@@ -17,6 +18,8 @@ idna==3.20
 Incremental==24.11.0
 msgpack==1.2.4
 packaging==26.3
+psycopg-binary==3.3.8
+psycopg==3.3.8
 pycparser==3.12
 PyJWT==2.15.1
 pyOpenSSL==26.4.0

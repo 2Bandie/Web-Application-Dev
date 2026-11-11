@@ -189,11 +189,11 @@ Optional Python formatting:
 
 Some managed command sandboxes prevent asyncio socket setup or local servers. Run the socket/browser checks with the environment's permitted network execution capability if they time out before connecting. Do not disable assertions or treat those timeouts as passed tests.
 
-## Configuration and deployment limits
+## Configuration and deployment
 
 `backend/.env.example` documents the environment variables. The application reads exported environment variables; it does **not** automatically load `.env`. Keep real `.env` files and keys untracked. The frontend uses relative `/api` and `/ws` routes, so it needs no client secret or environment file.
 
-The default is deliberately **one Daphne process**, an **in-memory channel layer**, and **SQLite**. This supports a classroom/local multiplayer demo. Do not run multiple workers: room broadcasts would be isolated. For deployment, use PostgreSQL for row locking, a Redis-backed Channels layer for shared broadcasts, TLS/WSS, a proper reverse proxy routing `/api` and `/ws`, a random `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0`, explicit `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`, and a static host for `frontend/dist`. Redis and production hosting are not configured here. No public deployment is claimed.
+For GitHub Pages plus Render, follow [DEPLOYMENT.md](DEPLOYMENT.md). Production uses PostgreSQL via a private `DATABASE_URL`, a generated Django secret, exact frontend CORS/WebSocket origins, and the supplied Render startup script. The Pages workflow builds the frontend at its project path with a public Render URL. One Daphne process/Render instance is required by the in-memory Channels layer; use Redis before scaling out. Local development still uses SQLite. Deployment configuration alone does not mean either service is live.
 
 For two computers on a trusted LAN, bind Vite to the LAN interface (`npm run dev -- --host 0.0.0.0 --port 5500 --strictPort`) and add that exact frontend origin to the exported `CORS_ALLOWED_ORIGINS` before starting Django. Django can remain bound to loopback because Vite proxies it. Do not expose the development server to the public Internet.
 

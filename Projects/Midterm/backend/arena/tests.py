@@ -507,3 +507,42 @@ class SocketTests(TransactionTestCase):
             await ws.disconnect()
 
         async_to_sync(check)()
+
+
+class DeploymentTests(TestCase):
+    def test_health_is_public_and_checks_the_database(self):
+        client = APIClient()
+        response = client.get("/api/health/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
+
+    def test_health_does_not_expose_database_failures(self):
+        from django.db import DatabaseError
+
+        with patch(
+            "config.health.connection.cursor",
+            side_effect=DatabaseError("private details"),
+        ):
+            response = APIClient().get("/api/health/")
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json(), {"status": "unavailable"})
+
+    def test_github_pages_origin_can_preflight_the_api(self):
+        from django.test import override_settings
+
+        with override_settings(CORS_ALLOWED_ORIGINS=["https://2bandie.github.io"]):
+            response = APIClient().options(
+                "/api/token/",
+                HTTP_ORIGIN="https://2bandie.github.io",
+                HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+                HTTP_ACCESS_CONTROL_REQUEST_HEADERS="content-type,authorization",
+            )
+            self.assertEqual(
+                response["Access-Control-Allow-Origin"], "https://2bandie.github.io"
+            )
+            blocked = APIClient().options(
+                "/api/token/",
+                HTTP_ORIGIN="https://untrusted.example",
+                HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST",
+            )
+            self.assertNotIn("Access-Control-Allow-Origin", blocked)

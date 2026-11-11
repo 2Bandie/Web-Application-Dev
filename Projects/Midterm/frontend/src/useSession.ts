@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PacketSchema, type Room } from "./types";
+import { socketUrl } from "./backend";
 import { refreshAccess } from "./api";
 export type HitBurst = { id: number; kind: "perfect" | "good" | "miss" };
 export function useSession(code: string | null, onRoom: (room: Room) => void) {
@@ -36,6 +37,7 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
       setConnection("offline");
       return;
     }
+    const roomCode = code;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let attempts = 0;
@@ -44,9 +46,7 @@ export function useSession(code: string | null, onRoom: (room: Room) => void) {
     function connect() {
       if (cancelled) return;
       setConnection("connecting");
-      const ws = new WebSocket(
-        `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/rooms/${code}/`,
-      );
+      const ws = new WebSocket(socketUrl(roomCode));
       socket.current = ws;
       ws.onopen = () => {
         ws.send(
