@@ -45,7 +45,6 @@ function AuthScreen() {
           </span>
           Pulse
         </h1>
-        <p className="auth-tagline">Find your frequency</p>
         <form onSubmit={(e) => void submit(e)}>
           <label>
             Username
@@ -212,7 +211,7 @@ function Dashboard() {
             className={tab === "arena" ? "nav-active" : ""}
             onClick={() => setTab("arena")}
           >
-            Play arena
+            Play
           </button>
           <button
             className={tab === "records" ? "nav-active" : ""}
@@ -517,24 +516,7 @@ function Dashboard() {
                   />
                 </div>
               </>
-            ) : (
-              <div className="empty-arena">
-                <span>◌</span>
-                <div>
-                  <h3>The stage is yours.</h3>
-                  <p>
-                    Pick a song and play solo, or invite friends to compare
-                    accuracy.
-                  </p>
-                </div>
-                <div className="key-preview">
-                  <kbd>D</kbd>
-                  <kbd>F</kbd>
-                  <kbd>J</kbd>
-                  <kbd>K</kbd>
-                </div>
-              </div>
-            )}
+            ) : null}
           </>
         ) : (
           <div className="records-grid">
