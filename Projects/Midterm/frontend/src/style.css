@@ -1,0 +1,622 @@
+/* Layout and a single flat palette; no gradients, shadows, or theme overrides. */
+:root {
+  font-family: "Nunito Variable", system-ui, sans-serif;
+  font-synthesis: none;
+  color-scheme: dark;
+  color: #f1f4f8;
+  background: #42794b;
+  line-height: 1.5;
+  --surface: #488b5d;
+  --border: #1a773a;
+  --muted: #c2dac0;
+  --blue: #79a2d6;
+  --yellow: #e5c454;
+  --green: #79b68e;
+  --pink: #d96d83;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+kbd {
+  font: inherit;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1,
+h2,
+h3,
+button,
+.brand {
+  font-weight: 850;
+}
+h1 {
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.2;
+}
+h2 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 18px;
+}
+p,
+small,
+.hint {
+  color: var(--muted);
+}
+small {
+  display: block;
+  font-size: 12px;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--yellow);
+  color: #162740;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+  border-color: currentColor;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0a4c28;
+  color: inherit;
+}
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+.secondary,
+.text-button,
+nav button {
+  background: transparent;
+  color: inherit;
+}
+.secondary {
+  border-color: var(--border);
+}
+.text-button {
+  padding: 6px 0;
+  font-size: 13px;
+}
+.app-shell {
+  max-width: 1400px;
+  margin: auto;
+}
+header,
+.brand,
+nav,
+.account,
+.join-row,
+.room-code,
+.solo-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+header {
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-size: 25px;
+}
+.brand-mark {
+  color: var(--blue);
+  font-size: 38px;
+  line-height: 1;
+}
+.brand-sub {
+  width: 65px;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+nav .nav-active {
+  color: var(--yellow);
+}
+.account {
+  font-size: 13px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #29723b;
+}
+main {
+  padding: 32px;
+}
+.page-heading {
+  margin-bottom: 28px;
+}
+.page-heading h1 {
+  color: var(--blue);
+}
+.setup-grid,
+.records-grid,
+.game-grid,
+.track-options,
+.play-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.panel,
+.auth-card,
+.instrument {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.panel-title {
+  font-size: 19px;
+}
+.track-options {
+  margin: 20px 0;
+  gap: 10px;
+}
+.track {
+  background: #134e3e;
+  color: inherit;
+  text-align: left;
+  padding: 12px;
+}
+.track.selected {
+  border-color: var(--yellow);
+}
+.track strong {
+  font-size: 14px;
+}
+.track small {
+  font-size: 11px;
+}
+.track-art {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 40px;
+  border-radius: 5px;
+  background: var(--blue);
+  color: #29725f;
+  font-size: 25px;
+}
+.track:nth-child(2) .track-art {
+  background: var(--yellow);
+}
+.track:nth-child(3) .track-art {
+  background: var(--green);
+}
+.track:nth-child(4) .track-art {
+  background: var(--pink);
+}
+.radio-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+.selected .radio-dot {
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+.hint {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.room-builder > .hint,
+.invite-panel > p,
+.standings > .hint {
+  margin-top: 14px;
+}
+.invite-panel > p {
+  font-size: 14px;
+}
+.invite-panel form {
+  margin-top: 24px;
+}
+.join-row {
+  margin-top: 8px;
+}
+.join-row input {
+  min-width: 0;
+}
+.join-row button {
+  flex-shrink: 0;
+}
+.session-heading,
+.section-heading,
+.session-controls,
+.feedback,
+.player-row,
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.session-heading {
+  margin: 30px 0 18px;
+}
+.eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+.tag {
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--yellow);
+  font-size: 11px;
+}
+.room-code {
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.room-code strong {
+  font-size: 17px;
+}
+.connection {
+  color: var(--yellow);
+}
+.connection.connected {
+  color: var(--green);
+}
+.game-grid {
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+}
+.session-controls {
+  flex-wrap: wrap;
+  min-height: 42px;
+  margin-bottom: 12px;
+}
+.solo-controls {
+  flex-wrap: wrap;
+}
+.session-controls button {
+  font-size: 13px;
+}
+.instrument {
+  padding: 0;
+  overflow: hidden;
+}
+.instrument-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+.instrument-top .eyebrow {
+  margin: 0;
+}
+.instrument-stage {
+  position: relative;
+}
+.note-canvas {
+  display: block;
+  width: 100%;
+  height: 430px;
+}
+.instrument .hint {
+  padding: 10px;
+  text-align: center;
+}
+kbd {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--yellow);
+}
+.feedback {
+  min-height: 65px;
+  font-size: 12px;
+}
+.feedback > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.feedback strong {
+  color: var(--yellow);
+  font-size: clamp(25px, 3vw, 34px);
+}
+.standings {
+  align-self: start;
+}
+.section-heading h2 {
+  font-size: 19px;
+}
+.accuracy-player {
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+}
+.accuracy-player:first-of-type {
+  margin-top: 16px;
+}
+.player-row {
+  justify-content: initial;
+  font-size: 13px;
+}
+.rank {
+  color: var(--muted);
+}
+.accuracy-value {
+  margin-left: auto;
+  color: var(--green);
+  font-size: 22px;
+}
+.accuracy-meter {
+  height: 8px;
+  margin: 10px 0;
+  background: #4fb35b;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.accuracy-meter span {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+.score,
+.accuracy-value,
+.feedback strong {
+  font-variant-numeric: tabular-nums;
+}
+.records-grid .eyebrow {
+  color: var(--yellow);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 13px;
+}
+th {
+  color: var(--muted);
+  text-align: left;
+}
+td,
+th {
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+}
+td:last-child,
+th:last-child {
+  text-align: right;
+}
+.history-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.history-row > div:last-child {
+  text-align: right;
+}
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: #5e2d40;
+  color: #fff0f4;
+}
+.auth-shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 30px;
+}
+.auth-brand {
+  font-size: 48px;
+}
+.auth-brand .brand-mark {
+  font-size: 56px;
+}
+.auth-card form {
+  display: grid;
+  gap: 16px;
+  margin: 26px 0 16px;
+}
+.auth-card input {
+  margin-top: 6px;
+}
+.auth-card > .text-button {
+  display: block;
+  margin: auto;
+}
+.auth-card .error {
+  margin-top: 16px;
+}
+.pause-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: #18325a;
+  text-align: center;
+}
+.pause-overlay strong {
+  color: var(--green);
+  font-size: 32px;
+}
+.pause-overlay span {
+  font-size: 14px;
+}
+.hit-burst {
+  position: absolute;
+  z-index: 2;
+  top: 52%;
+  left: 50%;
+  pointer-events: none;
+  color: var(--green);
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1;
+  font-weight: 900;
+  white-space: nowrap;
+  animation: hit-bounce 650ms both;
+}
+.hit-burst--good {
+  color: var(--yellow);
+}
+.hit-burst--miss {
+  color: var(--pink);
+}
+@keyframes hit-bounce {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.6);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(-50%, -12px) scale(1.15);
+  }
+  38% {
+    opacity: 1;
+    transform: translate(-50%, -3px) scale(0.96);
+  }
+  52% {
+    opacity: 1;
+    transform: translate(-50%, -7px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -34px) scale(0.95);
+  }
+}
+@keyframes hit-fade {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  20%,
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@media (max-width: 1100px) {
+  header {
+    padding: 18px 24px;
+  }
+  main {
+    padding: 24px;
+  }
+  .brand-sub {
+    display: none;
+  }
+  .track-options {
+    grid-template-columns: 1fr;
+  }
+  .play-options {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  header {
+    flex-wrap: wrap;
+    padding: 16px 18px;
+  }
+  nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .account > span:not(.avatar) {
+    display: none;
+  }
+  main {
+    padding: 24px 18px;
+  }
+  .setup-grid,
+  .records-grid,
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 18px;
+  }
+  .session-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .feedback {
+    gap: 8px;
+    font-size: 10px;
+  }
+  .feedback > span:first-child {
+    max-width: 48%;
+  }
+  .feedback > span:last-child {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hit-burst {
+    animation: hit-fade 650ms both;
+  }
+}
+
+.instrument[data-status="paused"] .eyebrow,
+.tag--paused {
+  color: var(--green);
+}
+.instrument-top .text-button {
+  margin-left: auto;
+}

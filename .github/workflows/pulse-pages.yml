@@ -1,0 +1,54 @@
+name: Deploy Pulse and static projects to Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: ${{ vars.PULSE_BACKEND_URL != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: Projects/Midterm/frontend/package-lock.json
+      - name: Read Pages base path
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Check backend configuration and readiness
+        env:
+          PULSE_BACKEND_URL: ${{ vars.PULSE_BACKEND_URL }}
+        run: |
+          node --input-type=module -e 'const u = new URL(process.env.PULSE_BACKEND_URL); if (u.protocol !== "https:" || u.pathname !== "/" || u.search || u.hash || u.username || u.password) throw new Error("PULSE_BACKEND_URL must be an HTTPS origin without /api or credentials");'
+          curl --fail --show-error --location --retry 6 --retry-all-errors --retry-delay 10 --max-time 60 --retry-max-time 180 "${PULSE_BACKEND_URL%/}/api/health/"
+      - name: Install frontend
+        working-directory: Projects/Midterm/frontend
+        run: npm ci --no-audit --no-fund
+      - name: Build for the project subdirectory
+        working-directory: Projects/Midterm/frontend
+        env:
+          VITE_BACKEND_URL: ${{ vars.PULSE_BACKEND_URL }}
+          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/Projects/Midterm/
+        run: npm run build
+      - name: Package static projects and Pulse
+        run: python3 Projects/Midterm/scripts/package_pages.py --output "$RUNNER_TEMP/pulse-pages"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/pulse-pages
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4

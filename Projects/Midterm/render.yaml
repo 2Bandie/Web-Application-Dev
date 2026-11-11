@@ -1,0 +1,24 @@
+# In Render: New > Blueprint, repository branch multiplayer-rhythm-arena,
+# Blueprint path Projects/Midterm/render.yaml. Review resources/plans before creating.
+services:
+  - type: web
+    name: pulse-backend
+    runtime: python
+    branch: multiplayer-rhythm-arena
+    rootDir: Projects/Midterm/backend
+    plan: free
+    numInstances: 1
+    buildCommand: bash build.sh
+    startCommand: bash start.sh
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://2bandie.github.io
+      - key: DATABASE_URL
+        sync: false
