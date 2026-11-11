@@ -310,7 +310,7 @@ test("vibrant UI shows Glow, the simplified heading, larger combo and transient 
   await register(page, `visual_${Date.now()}`);
   await expect(
     page.getByRole("heading", { name: "Feel the Beat", exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(page.locator("footer")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText(
     "MADE FOR THE MOMENT BETWEEN BEATS.",

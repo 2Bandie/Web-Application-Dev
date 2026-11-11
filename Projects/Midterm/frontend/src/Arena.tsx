@@ -164,7 +164,7 @@ export const Arena = memo(function Arena({
                 ? "TRACK COMPLETE"
                 : time < 0
                   ? String(Math.ceil(-time / 1000))
-                  : "ON THE BEAT";
+                  : "";
       if (label !== lastLabel) {
         setCountdown(label);
         lastLabel = label;
@@ -211,9 +211,13 @@ export const Arena = memo(function Arena({
     return () => cancelAnimationFrame(frame);
   }, [audio, hitNotes, offset, room.code]);
   return (
-    <section className="instrument" aria-label="Four lane rhythm game">
+    <section
+      className="instrument"
+      data-status={room.status}
+      aria-label="Four lane rhythm game"
+    >
       <div className="instrument-top">
-        <span className="eyebrow">{countdown}</span>
+        {countdown && <span className="eyebrow">{countdown}</span>}
         <button
           className="text-button"
           onClick={() => {
@@ -245,7 +249,6 @@ export const Arena = memo(function Arena({
         {room.status === "paused" && (
           <div className="pause-overlay" role="status">
             <strong>Paused</strong>
-            <span>Your song, notes, and accuracy are on hold.</span>
             <span>Use Resume above to keep playing.</span>
           </div>
         )}

@@ -233,9 +233,6 @@ function Dashboard() {
         </div>
       </header>
       <main>
-        <div className="page-heading">
-          <h1>Feel the Beat</h1>
-        </div>
         {(error || session.error) && (
           <div className="error" role="alert">
             {error || session.error}
@@ -349,10 +346,13 @@ function Dashboard() {
               <>
                 <div className="session-heading">
                   <div>
-                    <span className="eyebrow">YOUR LIVE SESSION</span>
                     <h2>
                       {room.song.title}{" "}
-                      <span className="tag">{room.status.toUpperCase()}</span>
+                      <span
+                        className={`tag${room.status === "paused" ? " tag--paused" : ""}`}
+                      >
+                        {room.status.toUpperCase()}
+                      </span>
                     </h2>
                   </div>
                   <div className="room-code">

@@ -203,7 +203,7 @@ Review changes and make meaningful commits as you understand and extend each fea
 
 ### Visual feedback
 
-The dashboard uses a flat blue surfaces with yellow, green, and reddish-pink accents and the heading **Feel the Beat**, with no bottom footer. **Best Combo** is enlarged below the lanes. Perfect hits show a bouncing **Perfect!** burst, good hits show **Good!**, and unplayed or mistimed notes show **Miss**. Each burst fades out after 650ms; reduced-motion settings use a simple fade instead of a bounce. Glow is the renamed original easy song, with the same chart ID and historical results preserved by migration.
+The dashboard uses your supplied flat colors, with no page slogan or bottom footer. **Best Combo** is enlarged below the lanes. Perfect hits show a bouncing **Perfect!** burst, good hits show **Good!**, and unplayed or mistimed notes show **Miss**. Each burst fades out after 650ms; reduced-motion settings use a simple fade instead of a bounce. Glow is the renamed original easy song, with the same chart ID and historical results preserved by migration.
 
 The login card now places the Pulse logo above a larger “Find your frequency” tagline. Dashboard panels use the concise PICK YOUR TRACK and PLAY WITH OTHERS headings. The previous marketing copy and extra live-accuracy explanation have been removed.
 
@@ -211,4 +211,6 @@ The rounded Nunito Variable font is bundled locally with the frontend, so it doe
 
 The interface uses solid blue surfaces without gradients or decorative glows. Supporting labels, stats, hints, room codes, and lane keys use the rounded Nunito family as well. The dashboard no longer fetches or displays a saved-session list; in-level solo Pause/Resume remains available.
 
-The stylesheet was rebuilt as one consistent theme (638 formatted lines instead of 1,194). Unused rules and layered theme overrides are removed. Blue, yellow, green, and reddish pink are the only accent colors; there are no gradients, shadows, glow filters, or hover-brightness effects. The rounded font and quick hit/miss animation remain.
+The stylesheet was rebuilt as one consistent theme (about 640 formatted lines instead of 1,194). Unused rules and layered theme overrides are removed. Blue, yellow, green, and reddish pink are the only accent colors; there are no gradients, shadows, glow filters, or hover-brightness effects. The rounded font and quick hit/miss animation remain.
+
+The latest user-provided stylesheet supplies the page, panel, input, and accent colors. The Feel the Beat, On the Beat, and Your Live Session labels and the extra paused-state description have been removed. Countdown numbers remain, and paused labels use the existing green accent.
